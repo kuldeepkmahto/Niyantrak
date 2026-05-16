@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firemen Dashboard - Niyantrak</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* ── FIREMEN SPECIFIC ── */
+        body { font-family: 'DM Sans', sans-serif; }
+
+        .sidebar {
+            width: clamp(230px, 18vw, 250px);
+            height: 100vh;
+            display: flex; flex-direction: column;
+            background: rgba(10,10,21,0.98);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255,87,34,0.15);
+            padding: 1.5rem;
+            position: sticky; top: 0;
+            flex-shrink: 0;
+        }
+
+        .sidebar-logo h2 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.4rem; font-weight: 700; color: white;
+            display: flex; align-items: center; gap: 0.5rem;
+            margin-bottom: 0.25rem;
+        }
+        .sidebar-logo h2 i { color: #ff5722; }
+        .sidebar-logo p { font-size: 0.78rem; color: #64748b; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.07); }
+
+        .nav-menu { list-style: none; flex: 1; display: flex; flex-direction: column; gap: 0.2rem; }
+        .nav-item {
+            width: 100%; display: flex; align-items: center; gap: 0.9rem;
+            padding: 0.85rem 1.1rem; border-radius: 12px; border: 1px solid transparent;
+            background: transparent; color: #94a3b8; font-size: 0.9rem; font-family: inherit;
+            cursor: pointer; transition: all 0.25s;
+        }
+        .nav-item i { font-size: 1.1rem; }
+        .nav-item:hover  { background: rgba(255,255,255,0.07); color: white; transform: translateX(3px); }
+        .nav-item.active { background: rgba(255,87,34,0.15); color: white; border-color: rgba(255,87,34,0.3); }
+
+        .sidebar-footer { margin-top: auto; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.07); }
+        .logout { color: #f87171 !important; }
+        .logout:hover { background: rgba(248,113,113,0.1) !important; }
+
+        /* MAIN */
+        .firemen-main {
+            flex: 1; overflow-y: auto;
+            display: flex; flex-direction: column;
+        }
+
+        /* NAVBAR */
+        .fm-navbar {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1.25rem 2rem;
+            background: rgba(10,10,21,0.98); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,87,34,0.15);
+            position: sticky; top: 0; z-index: 100;
+        }
+        .fm-navbar-title {
+            font-family: 'Rajdhani', sans-serif; font-size: 1.4rem; font-weight: 700;
+            background: var(--gradient-fire); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .fm-navbar-right { display: flex; align-items: center; gap: 1.25rem; }
+        .fm-badge {
+            position: relative; color: #94a3b8; font-size: 1.2rem; cursor: pointer;
+        }
+        .fm-badge-dot {
+            position: absolute; top: -6px; right: -6px; width: 18px; height: 18px;
+            background: #f44336; color: white; border-radius: 50%; font-size: 0.65rem;
+            display: flex; align-items: center; justify-content: center; font-weight: 700;
+        }
+        .team-status { display: flex; align-items: center; gap: 0.5rem; font-size: 0.88rem; color: #cbd5e1; }
+        .online-dot { width: 9px; height: 9px; border-radius: 50%; background: #4caf50; box-shadow: 0 0 6px #4caf5088; }
+
+        /* CONTENT */
+        .fm-content { padding: 2rem; flex: 1; }
+
+        .section { display: none; animation: fadeIn 0.3s ease; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .fm-section-title {
+            font-family: 'Rajdhani', sans-serif; font-size: 1.4rem; font-weight: 700;
+            margin-bottom: 1.25rem;
+            background: var(--gradient-fire); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+
+        /* STATUS GRID */
+        .status-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.25rem; margin-bottom: 2rem;
+        }
+
+        .status-card {
+            padding: 1.5rem; border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.05);
+            text-align: center; transition: all 0.3s;
+        }
+        .status-card:hover { transform: translateY(-4px); }
+        .status-card i { font-size: 2rem; display: block; margin-bottom: 0.75rem; }
+        .status-card h3 { font-weight: 700; margin-bottom: 0.35rem; }
+        .status-card p { color: #94a3b8; font-size: 0.85rem; }
+
+        .status-card.ready      { border-top: 3px solid #4caf50; }
+        .status-card.ready i    { color: #4caf50; }
+        .status-card.active-inc { border-top: 3px solid #f44336; animation: pulse-card 2s infinite; }
+        .status-card.active-inc i { color: #f44336; }
+        .status-card.warning    { border-top: 3px solid #ff9800; }
+        .status-card.warning i  { color: #ff9800; }
+        .status-card.info       { border-top: 3px solid #2196f3; }
+        .status-card.info i     { color: #2196f3; }
+
+        @keyframes pulse-card {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(244,67,54,0); }
+            50% { box-shadow: 0 0 0 6px rgba(244,67,54,0.1); }
+        }
+
+        /* QUICK ACTIONS */
+        .action-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.25rem; margin-bottom: 2.5rem;
+        }
+
+        .action-card {
+            padding: 1.5rem; border-radius: 16px; border: 1px solid;
+            cursor: pointer; transition: all 0.3s;
+            display: flex; flex-direction: column; align-items: center;
+            text-align: center; gap: 0.75rem; font-weight: 600; font-size: 0.9rem;
+            background: transparent; font-family: inherit;
+        }
+        .action-card i { font-size: 1.75rem; }
+        .action-card:hover { transform: translateY(-5px); }
+
+        .action-card.fire     { color: #ff5722; border-color: rgba(255,87,34,0.4);  background: rgba(255,87,34,0.08); }
+        .action-card.fire:hover { background: rgba(255,87,34,0.2); box-shadow: 0 10px 25px rgba(255,87,34,0.3); }
+        .action-card.photo    { color: #2196f3; border-color: rgba(33,150,243,0.4); background: rgba(33,150,243,0.08); }
+        .action-card.photo:hover{ background: rgba(33,150,243,0.2); box-shadow: 0 10px 25px rgba(33,150,243,0.3); }
+        .action-card.report   { color: #ff9800; border-color: rgba(255,152,0,0.4);  background: rgba(255,152,0,0.08); }
+        .action-card.report:hover{ background: rgba(255,152,0,0.2); box-shadow: 0 10px 25px rgba(255,152,0,0.3); }
+        .action-card.equip    { color: #4caf50; border-color: rgba(76,175,80,0.4);  background: rgba(76,175,80,0.08); }
+        .action-card.equip:hover { background: rgba(76,175,80,0.2); box-shadow: 0 10px 25px rgba(76,175,80,0.3); }
+
+        /* INCIDENTS */
+        .incident-list { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2.5rem; }
+
+        .incident-card {
+            display: flex; align-items: center; gap: 1.25rem;
+            padding: 1.25rem 1.5rem; border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.04);
+            transition: all 0.25s;
+        }
+        .incident-card:hover { background: rgba(255,255,255,0.07); }
+        .incident-card.critical { border-left: 4px solid #f44336; }
+        .incident-card.high     { border-left: 4px solid #ff5722; }
+        .incident-card.medium   { border-left: 4px solid #ff9800; }
+
+        .inc-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+        .inc-icon.critical { background: rgba(244,67,54,0.2); color: #f44336; }
+        .inc-icon.high     { background: rgba(255,87,34,0.2);  color: #ff5722; }
+        .inc-icon.medium   { background: rgba(255,152,0,0.2);  color: #ff9800; }
+
+        .inc-info { flex: 1; }
+        .inc-info h4 { font-weight: 700; margin-bottom: 0.2rem; }
+        .inc-info p  { color: #94a3b8; font-size: 0.85rem; }
+
+        .inc-meta { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 0.4rem; }
+        .inc-status-badge {
+            padding: 0.2rem 0.65rem; border-radius: 20px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+        }
+        .inc-status-badge.responding { background: rgba(244,67,54,0.2); color: #f44336; }
+        .inc-status-badge.contained  { background: rgba(255,152,0,0.2);  color: #ff9800; }
+        .inc-status-badge.clear      { background: rgba(76,175,80,0.2);  color: #4caf50; }
+
+        .inc-action-btn {
+            padding: 0.35rem 0.9rem; border-radius: 8px; border: 1px solid;
+            font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        /* CHECKLISTS */
+        .checklist-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+        .cl-tab {
+            padding: 0.6rem 1.25rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
+            background: transparent; color: #94a3b8; cursor: pointer; font-size: 0.88rem; font-family: inherit;
+            transition: all 0.2s;
+        }
+        .cl-tab.active { background: rgba(255,87,34,0.15); color: white; border-color: rgba(255,87,34,0.35); }
+
+        .checklist-panel { display: none; }
+        .checklist-panel.active { display: block; }
+
+        .checklist-card {
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 18px; padding: 1.5rem;
+        }
+
+        .cl-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1.25rem; padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+        }
+        .cl-header h3 { font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+        .cl-progress-wrap { display: flex; align-items: center; gap: 0.75rem; }
+        .cl-progress-bar { width: 120px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
+        .cl-progress-fill { height: 100%; background: var(--gradient-fire); border-radius: 3px; transition: width 0.4s; }
+        .cl-progress-text { font-size: 0.82rem; color: #94a3b8; font-weight: 600; min-width: 40px; }
+
+        .cl-items { display: flex; flex-direction: column; gap: 0.65rem; }
+
+        .cl-item {
+            display: flex; align-items: center; gap: 1rem;
+            padding: 0.9rem 1.1rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.07);
+            background: rgba(255,255,255,0.03); cursor: pointer; transition: all 0.25s;
+            user-select: none;
+        }
+        .cl-item:hover { background: rgba(255,255,255,0.06); }
+        .cl-item.checked { background: rgba(76,175,80,0.08); border-color: rgba(76,175,80,0.25); }
+
+        .cl-checkbox {
+            width: 22px; height: 22px; border-radius: 6px; border: 2px solid rgba(255,255,255,0.2);
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            transition: all 0.25s;
+        }
+        .cl-item.checked .cl-checkbox { background: #4caf50; border-color: #4caf50; color: white; font-size: 0.7rem; }
+
+        .cl-label { flex: 1; font-size: 0.9rem; transition: color 0.25s; }
+        .cl-item.checked .cl-label { color: #94a3b8; text-decoration: line-through; }
+
+        .cl-priority { font-size: 0.72rem; font-weight: 700; padding: 0.15rem 0.55rem; border-radius: 20px; flex-shrink: 0; }
+        .cl-priority.high { background: rgba(244,67,54,0.15); color: #f44336; }
+        .cl-priority.med  { background: rgba(255,152,0,0.15);  color: #ff9800; }
+        .cl-priority.low  { background: rgba(76,175,80,0.15);  color: #4caf50; }
+
+        .cl-footer {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.07);
+        }
+        .cl-reset-btn {
+            padding: 0.5rem 1.25rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15);
+            background: transparent; color: #94a3b8; cursor: pointer; font-size: 0.85rem; font-family: inherit; transition: all 0.2s;
+        }
+        .cl-reset-btn:hover { color: white; background: rgba(255,255,255,0.07); }
+        .cl-submit-btn {
+            padding: 0.5rem 1.5rem; border-radius: 8px; border: none;
+            background: var(--gradient-fire); color: white; cursor: pointer; font-weight: 700; font-size: 0.85rem; font-family: inherit; transition: all 0.25s;
+        }
+        .cl-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(255,87,34,0.4); }
+
+        .cl-analysis {
+            margin-top: 1.5rem; padding: 1rem; border-radius: 14px;
+            background: rgba(33,150,243,0.05); border: 1px solid rgba(33,150,243,0.15);
+        }
+        .cl-analysis h4 {
+            margin: 0 0 0.75rem; font-size: 0.95rem; font-weight: 700; color: #e2e8f0;
+        }
+        .analysis-summary {
+            margin-bottom: 0.85rem; color: #cbd5e1; font-size: 0.92rem;
+        }
+        .analysis-summary.safe { color: #4caf50; }
+        .analysis-summary.warning { color: #ffb300; }
+        .analysis-summary.threat { color: #ff6f61; }
+        .analysis-details { list-style: none; padding-left: 0; margin: 0; display: grid; gap: 0.45rem; }
+        .analysis-details li {
+            background: rgba(255,255,255,0.05); padding: 0.75rem 0.95rem; border-radius: 10px; color: #cbd5e1; font-size: 0.84rem;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        /* PHOTO UPLOAD */
+        .photo-upload-zone {
+            border: 2px dashed rgba(255,255,255,0.18); border-radius: 16px;
+            padding: 3rem; text-align: center; cursor: pointer; transition: all 0.3s;
+            color: #94a3b8; margin-bottom: 1.5rem; position: relative;
+        }
+        .photo-upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+        .photo-upload-zone i { font-size: 2.5rem; color: #2196f3; display: block; margin-bottom: 0.75rem; }
+        .photo-upload-zone h3 { color: white; margin-bottom: 0.5rem; }
+        .photo-upload-zone:hover, .photo-upload-zone.dragover { border-color: #2196f3; background: rgba(33,150,243,0.05); }
+
+        .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .photo-item { border-radius: 12px; overflow: hidden; position: relative; aspect-ratio: 4/3; }
+        .photo-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .photo-item-label { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.7); padding: 0.4rem 0.6rem; font-size: 0.72rem; color: white; }
+
+        .photo-meta-form { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 1.5rem; }
+        .photo-meta-form label { display: block; font-size: 0.8rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem; }
+        .photo-meta-form input,
+        .photo-meta-form select,
+        .photo-meta-form textarea { width: 100%; padding: 0.75rem 1rem; margin-bottom: 1rem; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; color: white; font-family: inherit; font-size: 0.9rem; outline: none; transition: all 0.25s; }
+        .photo-meta-form input:focus,
+        .photo-meta-form select:focus,
+        .photo-meta-form textarea:focus { border-color: rgba(33,150,243,0.6); box-shadow: 0 0 0 3px rgba(33,150,243,0.12); }
+        .photo-meta-form select option { background: #1a1a2e; }
+
+        /* TOAST */
+        .toast {
+            position: fixed; bottom: 2rem; right: 2rem;
+            background: rgba(15,15,35,0.97); backdrop-filter: blur(20px);
+            border: 1px solid rgba(76,175,80,0.4); color: #86efac;
+            padding: 1rem 1.5rem; border-radius: 14px;
+            display: flex; align-items: center; gap: 0.75rem;
+            font-weight: 600; transform: translateY(100px); opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4,0,0.2,1); z-index: 9999;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+        }
+        .toast.show    { transform: translateY(0); opacity: 1; }
+        .toast.warning { border-color: rgba(255,152,0,0.5); color: #ffd54f; }
+        .toast.danger  { border-color: rgba(244,67,54,0.5); color: #ff8a80; }
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+
+    <!-- ── SIDEBAR ── -->
+    <nav class="sidebar">
+        <div class="sidebar-logo">
+            <h2><i class="fas fa-fire"></i> Niyantrak</h2>
+            <p>Fire Response Unit</p>
+        </div>
+
+        <ul class="nav-menu">
+            <li><button class="nav-item active" data-section="dashboard">
+                <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
+            </button></li>
+            <li><button class="nav-item" data-section="incidents">
+                <i class="fas fa-map-marker-alt"></i><span>Active Incidents</span>
+            </button></li>
+            <li><button class="nav-item" data-section="checklists">
+                <i class="fas fa-clipboard-check"></i><span>Checklists</span>
+            </button></li>
+            <li><button class="nav-item" data-section="photos">
+                <i class="fas fa-camera"></i><span>Photo Upload</span>
+            </button></li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <button class="nav-item logout" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ── MAIN ── -->
+    <div class="firemen-main">
+
+        <!-- Navbar -->
+        <header class="fm-navbar">
+            <div class="fm-navbar-title">🚒 Fire Response</div>
+            <div class="fm-navbar-right">
+                <div class="fm-badge">
+                    <i class="fas fa-bell"></i>
+                    <span class="fm-badge-dot">1</span>
+                </div>
+                <div class="team-status">
+                    <span class="online-dot"></span>
+                    4/5 On Duty
+                </div>
+                <div style="color:#94a3b8;font-size:0.9rem">
+                    <i class="fas fa-user-circle"></i> <span id="userName">Fireman</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="fm-content">
+
+            <!-- ═══ DASHBOARD ═══ -->
+            <div id="section-dashboard" class="section active">
+
+                <div class="status-grid">
+                    <div class="status-card ready">
+                        <i class="fas fa-users"></i>
+                        <h3>Team Ready</h3>
+                        <p>4/5 members on duty</p>
+                    </div>
+                    <div class="status-card active-inc">
+                        <i class="fas fa-fire"></i>
+                        <h3>Warehouse A</h3>
+                        <p>Responding — ETA 5 min</p>
+                    </div>
+                    <div class="status-card warning">
+                        <i class="fas fa-tools"></i>
+                        <h3>Equipment</h3>
+                        <p>Hose #3 needs service</p>
+                    </div>
+                    <div class="status-card info">
+                        <i class="fas fa-clipboard-check"></i>
+                        <h3>Today's Checklist</h3>
+                        <p id="checklistSummary">Not started</p>
+                    </div>
+                </div>
+
+                <h2 class="fm-section-title">Quick Actions</h2>
+                <div class="action-grid">
+                    <button class="action-card fire" data-section="incidents">
+                        <i class="fas fa-fire-extinguisher"></i>
+                        Start Fire Response
+                    </button>
+                    <button class="action-card photo" data-section="photos">
+                        <i class="fas fa-camera"></i>
+                        Upload Photos
+                    </button>
+                    <button class="action-card report" onclick="showToast('Incident report form opened','warning')">
+                        <i class="fas fa-file-alt"></i>
+                        File Report
+                    </button>
+                    <button class="action-card equip" data-section="checklists">
+                        <i class="fas fa-clipboard-check"></i>
+                        Run Checklist
+                    </button>
+                </div>
+
+                <h2 class="fm-section-title">Recent Incidents</h2>
+                <div class="incident-list">
+                    <div class="incident-card critical">
+                        <div class="inc-icon critical"><i class="fas fa-fire"></i></div>
+                        <div class="inc-info">
+                            <h4>Warehouse A — Zone 3</h4>
+                            <p>Temp: 78°C • HIGH Smoke • 3 responders dispatched</p>
+                        </div>
+                        <div class="inc-meta">
+                            <span class="inc-status-badge responding">Responding</span>
+                            <small style="color:#64748b">2 min ago</small>
+                            <button class="inc-action-btn" style="color:#f44336;border-color:rgba(244,67,54,0.4)" onclick="showToast('Team dispatched to Warehouse A!','danger')">Dispatch</button>
+                        </div>
+                    </div>
+                    <div class="incident-card medium">
+                        <div class="inc-icon medium"><i class="fas fa-smog"></i></div>
+                        <div class="inc-info">
+                            <h4>Warehouse A — Zone 1</h4>
+                            <p>Temp: 42°C • MEDIUM Smoke • Monitoring</p>
+                        </div>
+                        <div class="inc-meta">
+                            <span class="inc-status-badge contained">Contained</span>
+                            <small style="color:#64748b">18 min ago</small>
+                            <button class="inc-action-btn" style="color:#4caf50;border-color:rgba(76,175,80,0.4)" onclick="showToast('Incident marked as clear','success')">Mark Clear</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ ACTIVE INCIDENTS ═══ -->
+            <div id="section-incidents" class="section">
+                <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem">
+                    <button class="cl-reset-btn" data-section="dashboard"><i class="fas fa-arrow-left"></i> Back</button>
+                    <h2 class="fm-section-title" style="margin:0">Active Incidents</h2>
+                </div>
+                <div class="incident-list">
+                    <div class="incident-card critical">
+                        <div class="inc-icon critical"><i class="fas fa-fire"></i></div>
+                        <div class="inc-info">
+                            <h4>Warehouse A — Zone 3</h4>
+                            <p>Temp: 78°C • HIGH Smoke • Structural concern</p>
+                        </div>
+                        <div class="inc-meta">
+                            <span class="inc-status-badge responding">🔴 Responding</span>
+                            <small style="color:#64748b">2 min ago</small>
+                            <button class="inc-action-btn" style="color:#f44336;border-color:rgba(244,67,54,0.4)" onclick="showToast('All units dispatched!','danger')">Full Response</button>
+                        </div>
+                    </div>
+                    <div class="incident-card high">
+                        <div class="inc-icon high"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div class="inc-info">
+                            <h4>Loading Dock — Bay 2</h4>
+                            <p>Temp: 55°C • Equipment fire risk</p>
+                        </div>
+                        <div class="inc-meta">
+                            <span class="inc-status-badge contained">🟡 Standby</span>
+                            <small style="color:#64748b">34 min ago</small>
+                            <button class="inc-action-btn" style="color:#ff9800;border-color:rgba(255,152,0,0.4)" onclick="showToast('Unit 2 dispatched to Loading Dock','warning')">Dispatch Unit</button>
+                        </div>
+                    </div>
+                    <div class="incident-card medium">
+                        <div class="inc-icon medium"><i class="fas fa-smog"></i></div>
+                        <div class="inc-info">
+                            <h4>Warehouse A — Zone 1</h4>
+                            <p>Temp: 42°C • MEDIUM Smoke — Cooling down</p>
+                        </div>
+                        <div class="inc-meta">
+                            <span class="inc-status-badge clear">🟢 Clearing</span>
+                            <small style="color:#64748b">1 hr ago</small>
+                            <button class="inc-action-btn" style="color:#4caf50;border-color:rgba(76,175,80,0.4)" onclick="showToast('Incident cleared','success')">Mark Clear</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ CHECKLISTS ═══ -->
+            <div id="section-checklists" class="section">
+                <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem">
+                    <button class="cl-reset-btn" data-section="dashboard"><i class="fas fa-arrow-left"></i> Back</button>
+                    <h2 class="fm-section-title" style="margin:0">Safety Checklists</h2>
+                </div>
+
+                <div class="checklist-tabs">
+                    <button class="cl-tab active" data-tab="preshift">Pre-Shift</button>
+                    <button class="cl-tab" data-tab="equipment">Equipment</button>
+                    <button class="cl-tab" data-tab="postshift">Post-Shift</button>
+                </div>
+
+                <!-- Pre-Shift -->
+                <div id="tab-preshift" class="checklist-panel active">
+                    <div class="checklist-card">
+                        <div class="cl-header">
+                            <h3><i class="fas fa-sun" style="color:#ff9800"></i> Pre-Shift Safety Check</h3>
+                            <div class="cl-progress-wrap">
+                                <div class="cl-progress-bar"><div class="cl-progress-fill" id="pre-fill" style="width:0%"></div></div>
+                                <span class="cl-progress-text" id="pre-text">0%</span>
+                            </div>
+                        </div>
+                        <div class="cl-items" id="cl-preshift"></div>
+                        <div class="cl-footer">
+                            <button class="cl-reset-btn" onclick="resetChecklist('preshift')"><i class="fas fa-redo"></i> Reset</button>
+                            <button class="cl-submit-btn" onclick="submitChecklist('preshift')"><i class="fas fa-check"></i> Submit Checklist</button>
+                        </div>
+                        <div class="cl-analysis" id="analysis-preshift">
+                            <h4>Checklist history comparison</h4>
+                            <div id="analysis-preshift-summary" class="analysis-summary">Loading previous submissions…</div>
+                            <ul id="analysis-preshift-details" class="analysis-details"></ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Equipment -->
+                <div id="tab-equipment" class="checklist-panel">
+                    <div class="checklist-card">
+                        <div class="cl-header">
+                            <h3><i class="fas fa-tools" style="color:#2196f3"></i> Equipment Inspection</h3>
+                            <div class="cl-progress-wrap">
+                                <div class="cl-progress-bar"><div class="cl-progress-fill" id="equip-fill" style="width:0%"></div></div>
+                                <span class="cl-progress-text" id="equip-text">0%</span>
+                            </div>
+                        </div>
+                        <div class="cl-items" id="cl-equipment"></div>
+                        <div class="cl-footer">
+                            <button class="cl-reset-btn" onclick="resetChecklist('equipment')"><i class="fas fa-redo"></i> Reset</button>
+                            <button class="cl-submit-btn" onclick="submitChecklist('equipment')"><i class="fas fa-check"></i> Submit Checklist</button>
+                        </div>
+                        <div class="cl-analysis" id="analysis-equipment">
+                            <h4>Checklist history comparison</h4>
+                            <div id="analysis-equipment-summary" class="analysis-summary">Loading previous submissions…</div>
+                            <ul id="analysis-equipment-details" class="analysis-details"></ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Post-Shift -->
+                <div id="tab-postshift" class="checklist-panel">
+                    <div class="checklist-card">
+                        <div class="cl-header">
+                            <h3><i class="fas fa-moon" style="color:#9c27b0"></i> Post-Shift Wrap-Up</h3>
+                            <div class="cl-progress-wrap">
+                                <div class="cl-progress-bar"><div class="cl-progress-fill" id="post-fill" style="width:0%"></div></div>
+                                <span class="cl-progress-text" id="post-text">0%</span>
+                            </div>
+                        </div>
+                        <div class="cl-items" id="cl-postshift"></div>
+                        <div class="cl-footer">
+                            <button class="cl-reset-btn" onclick="resetChecklist('postshift')"><i class="fas fa-redo"></i> Reset</button>
+                            <button class="cl-submit-btn" onclick="submitChecklist('postshift')"><i class="fas fa-check"></i> Submit Checklist</button>
+                        </div>
+                        <div class="cl-analysis" id="analysis-postshift">
+                            <h4>Checklist history comparison</h4>
+                            <div id="analysis-postshift-summary" class="analysis-summary">Loading previous submissions…</div>
+                            <ul id="analysis-postshift-details" class="analysis-details"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ PHOTOS ═══ -->
+            <div id="section-photos" class="section">
+                <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem">
+                    <button class="cl-reset-btn" data-section="dashboard"><i class="fas fa-arrow-left"></i> Back</button>
+                    <h2 class="fm-section-title" style="margin:0">Photo Upload</h2>
+                </div>
+
+                <div class="photo-upload-zone" id="photoDropZone">
+                    <input type="file" accept="image/*" multiple id="photoInput">
+                    <i class="fas fa-camera"></i>
+                    <h3>Upload Incident Photos</h3>
+                    <p>Click or drag & drop photos here</p>
+                    <p style="font-size:0.82rem;color:#64748b;margin-top:0.5rem">JPG, PNG — Multiple files supported</p>
+                </div>
+
+                <div id="photoGrid" class="photo-grid"></div>
+
+                <div class="photo-meta-form">
+                    <h3 style="font-weight:700;margin-bottom:1.25rem;font-family:'Rajdhani',sans-serif;font-size:1.1rem">Photo Details</h3>
+                    <label>Related Incident</label>
+                    <select>
+                        <option>Warehouse A — Zone 3 (Active)</option>
+                        <option>Loading Dock — Bay 2</option>
+                        <option>Warehouse A — Zone 1</option>
+                        <option>General / No Incident</option>
+                    </select>
+                    <label>Location / Zone</label>
+                    <input type="text" placeholder="e.g. Warehouse A, Zone 3, Near Gate 2">
+                    <label>Description</label>
+                    <textarea rows="3" placeholder="Describe what's shown in the photos..."></textarea>
+                    <button class="cl-submit-btn" style="width:100%;justify-content:center;padding:0.85rem" onclick="showToast('Photos uploaded and tagged successfully!','success')">
+                        <i class="fas fa-cloud-upload-alt"></i> Upload Photos
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div id="toast" class="toast">
+    <i class="fas fa-check-circle" id="toastIcon"></i>
+    <span id="toastMsg"></span>
+</div>
+
+<script src="script.js"></script>
+<script>
+// ── Navigation ────────────────────────────
+function showSection(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    const target = document.getElementById(`section-${id}`);
+    if (target) { target.classList.add('active'); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    document.querySelectorAll('.nav-item[data-section]').forEach(btn => btn.classList.toggle('active', btn.dataset.section === id));
+}
+
+document.querySelectorAll('[data-section]').forEach(el => {
+    el.addEventListener('click', () => showSection(el.dataset.section));
+});
+
+document.getElementById('logoutBtn')?.addEventListener('click', () => {
+    if (confirm('Logout?')) { localStorage.clear(); sessionStorage.clear(); window.location.href = 'login.html'; }
+});
+
+// ── Toast ─────────────────────────────────
+function showToast(msg, type = 'success') {
+    const icons = { success: 'fa-check-circle', warning: 'fa-exclamation-triangle', danger: 'fa-times-circle' };
+    document.getElementById('toastIcon').className = `fas ${icons[type] || icons.success}`;
+    document.getElementById('toastMsg').textContent = msg;
+    const t = document.getElementById('toast');
+    t.className = `toast ${type} show`;
+    setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ── Checklist data ────────────────────────
+const CHECKLISTS = {
+    preshift: [
+        { label: 'Check in with team leader', priority: 'high' },
+        { label: 'Verify shift handover notes', priority: 'high' },
+        { label: 'Confirm zone assignments', priority: 'med' },
+        { label: 'Test personal radio / comms', priority: 'high' },
+        { label: 'Inspect personal PPE (helmet, gloves, suit)', priority: 'high' },
+        { label: 'Verify emergency exits are clear', priority: 'med' },
+        { label: 'Check fire sensor status on dashboard', priority: 'high' },
+        { label: 'Review any overnight incident reports', priority: 'med' },
+        { label: 'Confirm fire truck readiness', priority: 'high' },
+        { label: 'Sign shift start log', priority: 'low' },
+    ],
+    equipment: [
+        { label: 'Hose #1 — Pressure & integrity OK', priority: 'high' },
+        { label: 'Hose #2 — Pressure & integrity OK', priority: 'high' },
+        { label: 'Hose #3 — Flag for service if needed', priority: 'high' },
+        { label: 'Fire extinguisher #A — Charged & tagged', priority: 'high' },
+        { label: 'Fire extinguisher #B — Charged & tagged', priority: 'high' },
+        { label: 'SCBA (breathing apparatus) — Cylinder full', priority: 'high' },
+        { label: 'Thermal imaging camera — Battery OK', priority: 'med' },
+        { label: 'Rescue rope — No frays or damage', priority: 'med' },
+        { label: 'First aid kit — Stocked & dated', priority: 'high' },
+        { label: 'Ladder — Locks functional', priority: 'med' },
+        { label: 'Vehicle fuel level above 75%', priority: 'low' },
+        { label: 'Vehicle horn, lights, sirens functional', priority: 'low' },
+    ],
+    postshift: [
+        { label: 'Submit all incident reports', priority: 'high' },
+        { label: 'Upload all photos taken during shift', priority: 'high' },
+        { label: 'Restock used first aid supplies', priority: 'med' },
+        { label: 'Refill any discharged extinguishers', priority: 'high' },
+        { label: 'Coil and store all hoses', priority: 'med' },
+        { label: 'Recharge SCBA cylinders if used', priority: 'high' },
+        { label: 'Brief incoming team on any issues', priority: 'high' },
+        { label: 'Log any equipment requiring maintenance', priority: 'med' },
+        { label: 'Sign shift end log', priority: 'low' },
+    ]
+};
+
+const checklistState = { preshift: {}, equipment: {}, postshift: {} };
+
+function renderChecklist(key) {
+    const container = document.getElementById(`cl-${key}`);
+    if (!container) return;
+    const items = CHECKLISTS[key];
+
+    container.innerHTML = items.map((item, i) => {
+        const checked = checklistState[key][i] || false;
+        return `
+        <div class="cl-item ${checked ? 'checked' : ''}" onclick="toggleCheck('${key}', ${i}, this)">
+            <div class="cl-checkbox">${checked ? '<i class="fas fa-check"></i>' : ''}</div>
+            <span class="cl-label">${item.label}</span>
+            <span class="cl-priority ${item.priority === 'high' ? 'high' : item.priority === 'med' ? 'med' : 'low'}">${item.priority === 'high' ? 'Required' : item.priority === 'med' ? 'Important' : 'Optional'}</span>
+        </div>`;
+    }).join('');
+
+    updateProgress(key);
+}
+
+function toggleCheck(key, idx, el) {
+    checklistState[key][idx] = !checklistState[key][idx];
+    el.classList.toggle('checked');
+    const checked = checklistState[key][idx];
+    el.querySelector('.cl-checkbox').innerHTML = checked ? '<i class="fas fa-check"></i>' : '';
+    el.querySelector('.cl-label').style.textDecoration = checked ? 'line-through' : 'none';
+    el.querySelector('.cl-label').style.color = checked ? '#94a3b8' : '';
+    updateProgress(key);
+    saveChecklistState();
+}
+
+function updateProgress(key) {
+    const items = CHECKLISTS[key];
+    const done  = Object.values(checklistState[key]).filter(Boolean).length;
+    const pct   = Math.round((done / items.length) * 100);
+    const fill  = document.getElementById(`${key.slice(0,4)}-fill`) || document.getElementById(`${key === 'equipment' ? 'equip' : key === 'postshift' ? 'post' : 'pre'}-fill`);
+    const text  = document.getElementById(`${key === 'equipment' ? 'equip' : key === 'postshift' ? 'post' : 'pre'}-text`);
+    if (fill) fill.style.width = pct + '%';
+    if (text) text.textContent = pct + '%';
+    updateDashboardSummary();
+    renderChecklistAnalysis(key);
+}
+
+function updateDashboardSummary() {
+    const all = ['preshift','equipment','postshift'];
+    let total = 0, done = 0;
+    all.forEach(k => {
+        total += CHECKLISTS[k].length;
+        done  += Object.values(checklistState[k]).filter(Boolean).length;
+    });
+    const el = document.getElementById('checklistSummary');
+    if (el) el.textContent = done === 0 ? 'Not started' : `${done}/${total} items done`;
+}
+
+function resetChecklist(key) {
+    checklistState[key] = {};
+    renderChecklist(key);
+    saveChecklistState();
+}
+
+function submitChecklist(key) {
+    const items   = CHECKLISTS[key];
+    const done    = Object.values(checklistState[key]).filter(Boolean).length;
+    const required = items.filter(i => i.priority === 'high').length;
+    const doneReq  = items.filter((item, i) => item.priority === 'high' && checklistState[key][i]).length;
+
+    if (doneReq < required) {
+        showToast(`${required - doneReq} required item(s) still unchecked`, 'warning');
+        return;
+    }
+
+    const entry = getCurrentChecklistEntry(key);
+    saveChecklistHistoryEntry(entry);
+    renderChecklistAnalysis(key);
+    showToast(`Checklist submitted! ${done}/${items.length} items completed.`, 'success');
+}
+
+function saveChecklistState() {
+    localStorage.setItem('niyantrak_checklists', JSON.stringify(checklistState));
+}
+
+const CHECKLIST_HISTORY_KEY = 'niyantrak_checklist_history';
+
+function getChecklistHistory() {
+    return JSON.parse(localStorage.getItem(CHECKLIST_HISTORY_KEY) || '[]');
+}
+
+function saveChecklistHistory(history) {
+    localStorage.setItem(CHECKLIST_HISTORY_KEY, JSON.stringify(history.slice(-12)));
+}
+
+function saveChecklistHistoryEntry(entry) {
+    const history = getChecklistHistory();
+    history.push(entry);
+    saveChecklistHistory(history);
+}
+
+function getCurrentChecklistEntry(key) {
+    const items = CHECKLISTS[key];
+    const checkedItems = items.map((item, i) => ({
+        label: item.label,
+        priority: item.priority,
+        checked: Boolean(checklistState[key][i]),
+    }));
+    const requiredTotal = items.filter(i => i.priority === 'high').length;
+    const requiredDone = checkedItems.filter(i => i.priority === 'high' && i.checked).length;
+    const completedCount = checkedItems.filter(i => i.checked).length;
+    const missedLabels = checkedItems.filter(i => i.priority === 'high' && !i.checked).map(i => i.label);
+    return {
+        key,
+        timestamp: new Date().toISOString(),
+        totalCount: items.length,
+        completedCount,
+        completionPct: items.length ? Math.round((completedCount / items.length) * 100) : 0,
+        requiredTotal,
+        requiredDone,
+        requiredPct: requiredTotal ? Math.round((requiredDone / requiredTotal) * 100) : 100,
+        missedLabels,
+    };
+}
+
+function computeChecklistHistoryAnalysis(key, current) {
+    const history = getChecklistHistory().filter(item => item.key === key);
+    const lastEntry = history[history.length - 1];
+    const details = [];
+    let status = 'safe';
+    let title = 'Checklist is stable compared to your recent history.';
+
+    if (!lastEntry) {
+        title = 'No previous checklist submission found for this type yet.';
+        details.push('Submit your first checklist to build a safe comparison baseline.');
+        return { status, title, details };
+    }
+
+    const decline = lastEntry.completionPct - current.completionPct;
+    const requiredDrop = lastEntry.requiredPct - current.requiredPct;
+    const repeatedCount = {};
+    history.slice(-3).forEach(item => {
+        (item.missedLabels || []).forEach(label => {
+            repeatedCount[label] = (repeatedCount[label] || 0) + 1;
+        });
+    });
+    const repeatedLabels = Object.entries(repeatedCount).filter(([, count]) => count >= 2);
+
+    details.push(`Last submission: ${lastEntry.completionPct}% complete, ${lastEntry.requiredPct}% required completion on ${new Date(lastEntry.timestamp).toLocaleDateString()}.`);
+
+    if (current.missedLabels.length) {
+        details.push(`Missing required items: ${current.missedLabels.join(', ')}.`);
+    }
+
+    if (decline > 0) {
+        details.push(`Completion dropped ${decline}% since last submission (${lastEntry.completionPct}% → ${current.completionPct}%).`);
+    }
+
+    if (requiredDrop > 0) {
+        details.push(`Required completion dropped ${requiredDrop}% since last submission.`);
+    }
+
+    if (repeatedLabels.length) {
+        repeatedLabels.forEach(([label, count]) => {
+            details.push(`Repeated miss: "${label}" was skipped ${count} times in the last ${Math.min(history.length, 3)} submissions.`);
+        });
+    }
+
+    if (current.completionPct < 80 || current.requiredPct < 100 || repeatedLabels.length || decline >= 15 || requiredDrop >= 15) {
+        status = 'warning';
+        title = 'Warning: Checklist shows weaker safety coverage than your recent submissions.';
+    }
+
+    if (current.completionPct < 70 || current.requiredPct < 90 || (repeatedLabels.length && current.missedLabels.length)) {
+        status = 'threat';
+        title = 'Threat detected: Current checklist raises significant safety concern.';
+    }
+
+    if (details.length === 1) {
+        details.push('No additional risks found compared to the last submission. Keep the checklist complete.');
+    }
+
+    return { status, title, details };
+}
+
+function renderChecklistAnalysis(key) {
+    const current = getCurrentChecklistEntry(key);
+    const analysis = computeChecklistHistoryAnalysis(key, current);
+    const summaryEl = document.getElementById(`analysis-${key}-summary`);
+    const detailsEl = document.getElementById(`analysis-${key}-details`);
+
+    if (summaryEl) {
+        summaryEl.textContent = analysis.title;
+        summaryEl.className = `analysis-summary ${analysis.status}`;
+    }
+    if (detailsEl) {
+        detailsEl.innerHTML = analysis.details.map(detail => `<li>${detail}</li>`).join('');
+    }
+}
+
+// ── Checklist tabs ─────────────────────────
+document.querySelectorAll('.cl-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.cl-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.checklist-panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(`tab-${tab.dataset.tab}`)?.classList.add('active');
+    });
+});
+
+// ── Photo upload ──────────────────────────
+const photoDropZone = document.getElementById('photoDropZone');
+const photoInput    = document.getElementById('photoInput');
+const photoGrid     = document.getElementById('photoGrid');
+
+photoDropZone?.addEventListener('dragover', e => { e.preventDefault(); photoDropZone.classList.add('dragover'); });
+photoDropZone?.addEventListener('dragleave', () => photoDropZone.classList.remove('dragover'));
+photoDropZone?.addEventListener('drop', e => { e.preventDefault(); photoDropZone.classList.remove('dragover'); handlePhotos(e.dataTransfer.files); });
+photoInput?.addEventListener('change', e => handlePhotos(e.target.files));
+
+function handlePhotos(files) {
+    if (!photoGrid) return;
+    Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = ev => {
+            const div = document.createElement('div');
+            div.className = 'photo-item';
+            div.innerHTML = `<img src="${ev.target.result}" alt="${file.name}"><div class="photo-item-label">${file.name.slice(0,18)}</div>`;
+            photoGrid.appendChild(div);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+// ── Init ──────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    loadChecklistState();
+    renderChecklist('preshift');
+    renderChecklist('equipment');
+    renderChecklist('postshift');
+    updateDashboardSummary();
+    renderChecklistAnalysis('preshift');
+    renderChecklistAnalysis('equipment');
+    renderChecklistAnalysis('postshift');
+
+    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+    const nameEl = document.getElementById('userName');
+    if (nameEl && user.email) nameEl.textContent = user.email.split('@')[0];
+});
+</script>
+</body>
+</html>

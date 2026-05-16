@@ -1,0 +1,75 @@
+{
+  "users": [
+    { "fullname": "Admin User", "email": "test@admin.com", "password": "Admin@123", "role": "admin", "department": "Management" },
+    { "fullname": "Employee One", "email": "test@employee.com", "password": "Emp@12345", "role": "employee", "department": "Operations" },
+    { "fullname": "Fireman Raj", "email": "test@firemen.com", "password": "Fire@1234", "role": "firemen", "department": "Fire Response" }
+  ],
+  "alerts": [
+    { "title": "Warehouse A — Zone 3", "location": "Warehouse A", "zone": "Zone 3", "level": "critical", "type": "fire", "temperature": 78, "detail": "HIGH Smoke detected. Temp: 78°C", "status": "active", "source": "sensor" },
+    { "title": "Electrical Room — Panel B", "location": "Electrical Room", "level": "high", "type": "other", "temperature": 55, "detail": "Overload detected on Panel B", "status": "active", "source": "sensor" },
+    { "title": "Ventilation Unit B2", "location": "Warehouse B", "level": "medium", "type": "other", "detail": "Filter clog — reduced airflow", "status": "active", "source": "manual" }
+  ],
+  "incidents": [
+    {
+      "type": "near-miss",
+      "location": "Warehouse A",
+      "zone": "Zone 2",
+      "severity": "medium",
+      "description": "Forklift almost collided with pedestrian near loading area",
+      "incidentDate": "2026-04-08T09:00:00.000Z",
+      "nearMiss": {
+        "whatHappened": "Forklift operator did not see pedestrian at blind corner",
+        "contributingFactors": ["Poor lighting", "No mirror at corner"],
+        "immediateAction": "Area was cordoned off"
+      }
+    },
+    {
+      "type": "incident-report",
+      "location": "Boiler Room",
+      "severity": "high",
+      "description": "Minor burn injury due to steam pipe leak",
+      "incidentDate": "2026-04-05T14:30:00.000Z",
+      "status": "under-review",
+      "incidentReport": {
+        "incidentType": "Injury – Minor",
+        "personsInvolved": ["Employee One"],
+        "injuriesOrDamage": "Minor burn on left forearm",
+        "responseActions": ["First aid administered", "Supervisor notified"]
+      }
+    }
+  ],
+  "checklists": [
+    {
+      "checklistType": "preshift",
+      "zone": "Zone 1",
+      "shiftDate": "2026-04-09T23:30:00.000Z",
+      "items": [
+        { "label": "Check in with team leader", "priority": "high", "checked": true },
+        { "label": "Verify shift handover notes", "priority": "high", "checked": true },
+        { "label": "Test personal radio / comms", "priority": "high", "checked": true },
+        { "label": "Inspect personal PPE", "priority": "high", "checked": false },
+        { "label": "Check fire sensor status", "priority": "high", "checked": true },
+        { "label": "Confirm fire truck readiness", "priority": "high", "checked": true },
+        { "label": "Verify emergency exits are clear", "priority": "med", "checked": true },
+        { "label": "Review overnight incident reports", "priority": "med", "checked": false },
+        { "label": "Sign shift start log", "priority": "low", "checked": true }
+      ],
+      "stats": { "total": 9, "checked": 7, "requiredTotal": 6, "requiredChecked": 5, "completionPct": 78, "requiredPct": 83 },
+      "ai": { "riskScore": 25, "riskLevel": "medium", "flags": ["1 required item skipped: Inspect personal PPE"], "recommendations": ["Complete all required items before starting shift."], "analyzedAt": "2026-04-09T23:35:00.000Z" }
+    },
+    {
+      "checklistType": "equipment",
+      "zone": "Zone 2",
+      "shiftDate": "2026-04-10T06:30:00.000Z",
+      "items": [
+        { "label": "Inspect fire hose integrity", "priority": "high", "checked": true },
+        { "label": "Validate extinguisher pressure", "priority": "high", "checked": false },
+        { "label": "Check emergency lighting", "priority": "med", "checked": true },
+        { "label": "Review control panel indicators", "priority": "med", "checked": true },
+        { "label": "Confirm access to hydrants", "priority": "low", "checked": true }
+      ],
+      "stats": { "total": 5, "checked": 4, "requiredTotal": 2, "requiredChecked": 1, "completionPct": 80, "requiredPct": 50 },
+      "ai": { "riskScore": 45, "riskLevel": "high", "flags": ["Critical equipment not verified: Validate extinguisher pressure"], "recommendations": ["Log faulty equipment in the maintenance system and notify your supervisor immediately."], "analyzedAt": "2026-04-10T06:40:00.000Z" }
+    }
+  ]
+}

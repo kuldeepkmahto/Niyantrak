@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔥 Niyantrak - Sign Up</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <h1><i class="fas fa-fire"></i> Sign Up</h1>
+            <p>Join Niyantrak Fire Safety System</p>
+            <form id="signupForm">
+                <input type="text" id="fullname" placeholder="Full Name" required>
+                <input type="email" id="email" placeholder="Email" required>
+                <input type="tel" id="phone" placeholder="Phone" required>
+                <input type="password" id="password" placeholder="Password (8+ chars)" required>
+                <input type="password" id="confirmpassword" placeholder="Confirm Password" required>
+                <select id="role" required>
+                    <option value="">Select Role</option>
+                    <option value="admin">Admin</option>
+                    <option value="employee">Employee</option>
+                    <option value="firemen">Firemen</option>
+                </select>
+                <button type="submit" style = "color:rgb(0, 0, 0); background:rgb(227, 93, 93)">Create Account</button>
+            </form>
+            <div id="message"><p>Already have account? <a href="login.html">Sign In</a></p>
+                <p><a href="index.html">← Back to Home</a></p></div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
