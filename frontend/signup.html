@@ -9,25 +9,34 @@
 </head>
 <body>
     <div class="login-container">
+        <div class="login-media" aria-hidden="true">
+            <video autoplay muted loop playsinline>
+                <source src="https://videos.pexels.com/video-files/36088987/15305557_1920_1080_60fps.mp4" type="video/mp4">
+            </video>
+        </div>
         <div class="login-card">
+            <div class="auth-eyebrow">Secure onboarding</div>
             <h1><i class="fas fa-fire"></i> Sign Up</h1>
-            <p>Join Niyantrak Fire Safety System</p>
-            <form id="signupForm">
-                <input type="text" id="fullname" placeholder="Full Name" required>
-                <input type="email" id="email" placeholder="Email" required>
-                <input type="tel" id="phone" placeholder="Phone" required>
-                <input type="password" id="password" placeholder="Password (8+ chars)" required>
-                <input type="password" id="confirmpassword" placeholder="Confirm Password" required>
+            <p class="auth-subtitle">Create your account to access alerts, dashboards, and compliance tools.</p>
+            <form id="signupForm" class="auth-form">
+                <input type="text" id="fullname" placeholder="Full name" required>
+                <input type="email" id="email" placeholder="Work email" required>
+                <input type="tel" id="phone" placeholder="Phone number" required>
+                <input type="password" id="password" placeholder="Password (8+ characters)" required>
+                <input type="password" id="confirmpassword" placeholder="Confirm password" required>
                 <select id="role" required>
-                    <option value="">Select Role</option>
+                    <option value="">Select role</option>
                     <option value="admin">Admin</option>
                     <option value="employee">Employee</option>
                     <option value="firemen">Firemen</option>
                 </select>
-                <button type="submit" style = "color:rgb(0, 0, 0); background:rgb(227, 93, 93)">Create Account</button>
+                <button type="submit" class="btn-primary auth-submit">Create Account</button>
             </form>
-            <div id="message"><p>Already have account? <a href="login.html">Sign In</a></p>
-                <p><a href="index.html">← Back to Home</a></p></div>
+            <div id="message"></div>
+            <div class="auth-links">
+                <p>Already have an account? <a href="login.html">Sign in</a></p>
+                <p><a href="index.html">Back to home</a></p>
+            </div>
         </div>
     </div>
     <script src="script.js"></script>

@@ -88,6 +88,16 @@ const incidentSchema = new mongoose.Schema({
   aiRiskScore: { type: Number, default: null },
   aiFlags:     [String],
 
+  // ── AI auto-triage (NLP classification of the description) ────────────
+  aiTriage: {
+    suggestedSeverity: String,           // low | medium | high | critical
+    hazardCategory:    String,           // fire | electrical | chemical | ...
+    summary:           String,           // one-line AI-generated summary
+    keyRisks:          [String],
+    source:            String,           // 'llm' | 'heuristic'
+    analyzedAt:         Date,
+  },
+
 }, { timestamps: true });
 
 // Index for fast queries

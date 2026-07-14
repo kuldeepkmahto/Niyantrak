@@ -25,9 +25,7 @@ html {
 
 body { 
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: 
-        radial-gradient(ellipse at top left, rgba(255, 87, 34, 0.05) 0%, transparent 50%),
-        var(--gradient-dark);
+    background: none;
     min-height: 100vh; 
     color: #e2e8f0;
     line-height: 1.6;
@@ -46,7 +44,22 @@ body {
     text-align: center;
     padding: 0 clamp(20px, 5vw, 80px);
     position: relative;
-    background: url('https://images.unsplash.com/photo-1588011930968-eadac80e6a5a?q=80&w=1169&auto=format&fit=crop&ixlib=rb-4.1.0') center/cover;
+    overflow: hidden;
+    background: none;
+}
+
+.hero-media {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.hero-media video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
 .hero::before {
@@ -379,15 +392,40 @@ header h1 {
 
 /* LOGIN/SIGNUP FORMS */
 .login-container {
-    background: url('https://i.ytimg.com/vi/XG1TWkDOKMY/hq720.jpg') center/cover;
+    position: relative;
+    background: none;
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 2rem;
+    overflow: hidden;
+}
+
+.login-media {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.login-media::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(8, 10, 20, 0.5), rgba(8, 10, 20, 0.8));
+}
+
+.login-media video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
 .login-card {
+    position: relative;
+    z-index: 1;
     background: var(--glass-bg);
     backdrop-filter: blur(80px);
     border: 1px solid var(--glass-border);
@@ -398,6 +436,33 @@ header h1 {
     box-shadow: var(--shadow-xl);
     text-align: center;
     color: #0f0f23;
+}
+
+.auth-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.35rem 0.85rem;
+    margin-bottom: 1rem;
+    border-radius: 999px;
+    background: rgba(255, 87, 34, 0.12);
+    color: #ff8a65;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.auth-subtitle {
+    color: #475569;
+    font-size: 0.98rem;
+    margin-bottom: 1.5rem;
+}
+
+.auth-form {
+    display: grid;
+    gap: 0.9rem;
+    text-align: left;
 }
 
 .login-card h1 {
@@ -412,7 +477,6 @@ header h1 {
 .login-card input, .login-card select {
     width: 100%;
     padding: 1rem 1.25rem;
-    margin: 0.75rem 0;
     border: 1px solid var(--glass-border);
     border-radius: 12px;
     background: rgba(243, 132, 132, 0.15);
@@ -430,6 +494,30 @@ header h1 {
     border-color: var(--fire-orange);
     box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.1);
     background: rgba(255, 255, 255, 0.2);
+}
+
+.auth-submit {
+    width: 100%;
+    margin-top: 0.5rem;
+    color: white;
+}
+
+.auth-links {
+    margin-top: 1.25rem;
+    display: grid;
+    gap: 0.4rem;
+    font-size: 0.95rem;
+    color: #475569;
+}
+
+.auth-links a {
+    color: var(--fire-orange-dark);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.auth-links a:hover {
+    text-decoration: underline;
 }
 
 #message {

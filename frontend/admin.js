@@ -282,127 +282,157 @@ function buildAnalyticsTable() {
         </tr>`).join('');
 }
 
-// ── Users Table ───────────────────────────
-const DEMO_USERS = [
-    { name: 'Arjun Sharma',   email: 'arjun@niyantrak.com',    role: 'admin',         zone: 'All Zones',     status: 'active',   last: '2 min ago' },
-    { name: 'Priya Mehta',    email: 'priya@niyantrak.com',    role: 'employee',      zone: 'WH-A Zone 1',   status: 'active',   last: '15 min ago' },
-    { name: 'Ravi Patel',     email: 'ravi@niyantrak.com',     role: 'firemen',       zone: 'WH-A Zone 3',   status: 'active',   last: '3 min ago' },
-    { name: 'Sneha Iyer',     email: 'sneha@niyantrak.com',    role: 'employee',      zone: 'WH-B Zone 1',   status: 'inactive', last: '2 days ago' },
-    { name: 'Kiran Reddy',    email: 'kiran@niyantrak.com',    role: 'safetyofficer', zone: 'Office Block',  status: 'active',   last: '1 hr ago' },
-    { name: 'Ananya Desai',   email: 'ananya@niyantrak.com',   role: 'firemen',       zone: 'Loading Dock',  status: 'active',   last: '8 min ago' },
-    { name: 'Vikram Joshi',   email: 'vikram@niyantrak.com',   role: 'employee',      zone: 'WH-A Zone 2',   status: 'active',   last: '45 min ago' },
-    { name: 'Meera Nair',     email: 'meera@niyantrak.com',    role: 'employee',      zone: 'WH-A Zone 3',   status: 'inactive', last: '5 days ago' },
-];
-
+// ── Users Table (real data) ───────────────
 const ROLE_COLORS = { admin: '#ff5722', employee: '#2196f3', firemen: '#f44336', safetyofficer: '#9c27b0' };
 
-function renderUsersTable(filter = '') {
+function timeAgo(dateStr) {
+    if (!dateStr) return '—';
+    const diffMs = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return `${mins} min ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs} hr ago`;
+    return `${Math.floor(hrs / 24)} day(s) ago`;
+}
+
+async function renderUsersTable(filter = '') {
     const roleF   = document.getElementById('roleFilter')?.value || '';
     const statusF = document.getElementById('statusFilter')?.value || '';
     const tbody   = document.getElementById('usersTableBody');
     if (!tbody) return;
 
-    let users = DEMO_USERS.filter(u => {
-        const matchSearch = !filter || u.name.toLowerCase().includes(filter) || u.email.toLowerCase().includes(filter);
-        const matchRole   = !roleF   || u.role === roleF;
-        const matchStatus = !statusF || u.status === statusF;
-        return matchSearch && matchRole && matchStatus;
-    });
+    const params = new URLSearchParams({ limit: '100' });
+    if (filter) params.set('search', filter);
+    if (roleF)  params.set('role', roleF);
+    if (statusF) params.set('isActive', statusF === 'active' ? 'true' : 'false');
 
+    const { ok, data } = await apiFetch(`/users?${params.toString()}`);
+    if (!ok || !data?.data) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#64748b;padding:2rem">Could not load users — check the backend is running</td></tr>';
+        return;
+    }
+
+    const users = data.data;
     if (!users.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#64748b;padding:2rem">No users found</td></tr>'; return; }
 
-    tbody.innerHTML = users.map((u, i) => `
+    tbody.innerHTML = users.map(u => {
+        const status = u.isActive ? 'active' : 'inactive';
+        const color  = ROLE_COLORS[u.role] || '#94a3b8';
+        return `
         <tr>
             <td>
                 <div class="user-cell">
-                    <div class="user-avatar" style="background:${ROLE_COLORS[u.role]}22;color:${ROLE_COLORS[u.role]}">${u.name[0]}</div>
-                    ${u.name}
+                    <div class="user-avatar" style="background:${color}22;color:${color}">${(u.fullname || u.email)[0].toUpperCase()}</div>
+                    ${u.fullname || '—'}
                 </div>
             </td>
             <td style="color:#94a3b8">${u.email}</td>
-            <td><span class="role-badge" style="background:${ROLE_COLORS[u.role]}22;color:${ROLE_COLORS[u.role]};border-color:${ROLE_COLORS[u.role]}44">${u.role}</span></td>
-            <td>${u.zone}</td>
-            <td><span class="status-dot ${u.status}"></span> ${u.status}</td>
-            <td style="color:#94a3b8;font-size:0.85rem">${u.last}</td>
+            <td><span class="role-badge" style="background:${color}22;color:${color};border-color:${color}44">${u.role}</span></td>
+            <td>${u.department || '—'}</td>
+            <td><span class="status-dot ${status}"></span> ${status}</td>
+            <td style="color:#94a3b8;font-size:0.85rem">${timeAgo(u.lastLogin)}</td>
             <td>
                 <div class="action-btns">
-                    <button class="act-btn edit" title="Edit"><i class="fas fa-edit"></i></button>
-                    <button class="act-btn del"  title="Disable" onclick="showToast('User disabled','warning')"><i class="fas fa-ban"></i></button>
+                    ${u.isActive
+                        ? `<button class="act-btn del" title="Deactivate" onclick="deactivateUser('${u._id}')"><i class="fas fa-ban"></i></button>`
+                        : `<span style="color:#64748b;font-size:0.78rem">Deactivated</span>`}
                 </div>
             </td>
-        </tr>`).join('');
+        </tr>`;
+    }).join('');
+}
+
+async function deactivateUser(id) {
+    if (!confirm('Deactivate this user? They will no longer be able to log in.')) return;
+    const { ok, data } = await apiFetch(`/users/${id}/deactivate`, { method: 'PUT' });
+    if (ok) { showToast('User deactivated', 'success'); renderUsersTable(document.getElementById('userSearch')?.value.toLowerCase() || ''); }
+    else showToast(data?.message || 'Could not deactivate user', 'error');
 }
 
 document.getElementById('userSearch')?.addEventListener('input', e => renderUsersTable(e.target.value.toLowerCase()));
 document.getElementById('roleFilter')?.addEventListener('change', () => renderUsersTable(document.getElementById('userSearch')?.value.toLowerCase() || ''));
 document.getElementById('statusFilter')?.addEventListener('change', () => renderUsersTable(document.getElementById('userSearch')?.value.toLowerCase() || ''));
 
-// ── Alerts Admin Grid ─────────────────────
-const DEMO_ALERTS = [
-    { id: 1, zone: 'WH-A Zone 3', type: 'Fire',     temp: '78°C',  smoke: 'HIGH',   severity: 'critical', time: '2 min ago',  status: 'active' },
-    { id: 2, zone: 'WH-A Zone 1', type: 'Smoke',    temp: '42°C',  smoke: 'MEDIUM', severity: 'high',     time: '18 min ago', status: 'active' },
-    { id: 3, zone: 'Loading Dock',type: 'Temp High', temp: '55°C', smoke: 'LOW',    severity: 'medium',   time: '1 hr ago',   status: 'active' },
-    { id: 4, zone: 'WH-B Zone 1', type: 'Smoke',    temp: '38°C',  smoke: 'LOW',    severity: 'low',      time: '3 hr ago',   status: 'resolved' },
-    { id: 5, zone: 'Office Block', type: 'Sensor',   temp: '29°C', smoke: 'NONE',   severity: 'low',      time: '5 hr ago',   status: 'resolved' },
-];
-
+// ── Alerts Admin Grid (real data) ─────────
 const SEV_COLORS = { critical: '#f44336', high: '#ff5722', medium: '#ff9800', low: '#4caf50' };
 
-function renderAlertsGrid() {
+async function renderAlertsGrid() {
     const grid = document.getElementById('alertsAdminGrid');
     if (!grid) return;
-    grid.innerHTML = DEMO_ALERTS.map(a => `
-        <div class="alert-admin-card ${a.severity}">
+
+    const { ok, data } = await apiFetch('/alerts?limit=50');
+    if (!ok || !data?.data) {
+        grid.innerHTML = '<p style="color:#64748b;padding:1rem">Could not load alerts — check the backend is running.</p>';
+        return;
+    }
+
+    const alerts = data.data;
+    const activeCount = alerts.filter(a => a.status === 'active').length;
+    const kpiEl = document.getElementById('activeAlerts');
+    if (kpiEl) kpiEl.textContent = activeCount;
+
+    if (!alerts.length) { grid.innerHTML = '<p style="color:#64748b;padding:1rem">No alerts yet.</p>'; return; }
+
+    grid.innerHTML = alerts.map(a => `
+        <div class="alert-admin-card ${a.level}">
             <div class="aac-header">
-                <span class="aac-type"><i class="fas fa-fire"></i> ${a.type}</span>
+                <span class="aac-type"><i class="fas fa-fire"></i> ${a.type}${a.aiGenerated ? ' <i class="fas fa-wand-magic-sparkles" title="AI-generated" style="color:#c4b5fd"></i>' : ''}</span>
                 <span class="aac-status ${a.status}">${a.status}</span>
             </div>
-            <div class="aac-zone">${a.zone}</div>
+            <div class="aac-zone">${a.location}${a.zone ? ' — ' + a.zone : ''}</div>
             <div class="aac-metrics">
-                <span style="color:${SEV_COLORS[a.severity]};font-size:1.6rem;font-weight:800">${a.temp}</span>
-                <span class="aac-smoke">${a.smoke} Smoke</span>
+                <span style="color:${SEV_COLORS[a.level]};font-size:1.6rem;font-weight:800">${a.temperature ? a.temperature + '°C' : a.level.toUpperCase()}</span>
+                <span class="aac-smoke">${a.detail || ''}</span>
             </div>
             <div class="aac-footer">
-                <small>${a.time}</small>
-                ${a.status === 'active'
-                    ? `<button class="act-btn resolve" onclick="resolveAlert(${a.id},this)">Resolve</button>`
+                <small>${timeAgo(a.createdAt)}</small>
+                ${a.status !== 'resolved'
+                    ? `<button class="act-btn resolve" onclick="resolveAlert('${a._id}')">Resolve</button>`
                     : `<span style="color:#4caf50;font-size:0.85rem"><i class="fas fa-check"></i> Resolved</span>`}
             </div>
         </div>`).join('');
 }
 
-function resolveAlert(id, btn) {
-    const alert = DEMO_ALERTS.find(a => a.id === id);
-    if (alert) { alert.status = 'resolved'; renderAlertsGrid(); showToast('Alert resolved successfully', 'success'); }
-    const kpiEl = document.getElementById('activeAlerts');
-    if (kpiEl) kpiEl.textContent = Math.max(0, (parseInt(kpiEl.textContent) || 1) - 1);
+async function resolveAlert(id) {
+    const { ok, data } = await apiFetch(`/alerts/${id}/status`, {
+        method: 'PUT',
+        body: JSON.stringify({ status: 'resolved' }),
+    });
+    if (ok) { showToast('Alert resolved successfully', 'success'); renderAlertsGrid(); }
+    else showToast(data?.message || 'Could not resolve alert', 'error');
 }
 
-// ── Reports from localStorage ─────────────
-function renderReportsTable() {
+
+// ── Reports (real data from backend) ──────
+async function renderReportsTable() {
     const tbody = document.getElementById('reportsTableBody');
     if (!tbody) return;
-    const subs = JSON.parse(localStorage.getItem('niyantrak_submissions') || '[]');
 
-    if (!subs.length) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#64748b;padding:2rem">No reports yet — employees haven\'t submitted any</td></tr>';
+    const { ok, data } = await apiFetch('/incidents?limit=20');
+    if (!ok || !data?.data?.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#64748b;padding:2rem">No reports yet — employees haven\'t submitted any, or the backend is unreachable</td></tr>';
         return;
     }
 
-    const LABEL = { 'near-miss': 'Near Miss', unsafe: 'Unsafe Condition', permit: 'Work Permit', incident: 'Incident Report' };
+    const LABEL = { 'near-miss': 'Near Miss', 'unsafe-condition': 'Unsafe Condition', 'work-permit': 'Work Permit', 'incident-report': 'Incident Report' };
     const SEV_MAP = { critical: 'badge-critical', high: 'badge-high', medium: 'badge-medium', low: 'badge-low' };
 
-    tbody.innerHTML = subs.slice(0, 20).map(s => {
-        const sev = s.severity || s.risk || 'submitted';
-        const ts  = new Date(s.timestamp).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+    tbody.innerHTML = data.data.map(s => {
+        const sev = s.severity || 'submitted';
+        const ts  = new Date(s.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+        const submitter = s.submittedBy?.fullname || s.submittedBy?.email || 'Employee';
+        const aiTag = s.aiTriage?.suggestedSeverity
+            ? `<div style="font-size:0.72rem;color:#c4b5fd;margin-top:0.2rem"><i class="fas fa-wand-magic-sparkles"></i> AI: ${s.aiTriage.suggestedSeverity} · ${s.aiTriage.hazardCategory || ''}</div>`
+            : '';
         return `
         <tr>
-            <td><span class="role-badge" style="background:rgba(255,87,34,0.15);color:#ff7043;border-color:rgba(255,87,34,0.3)">${LABEL[s.type] || s.type}</span></td>
-            <td>Employee</td>
-            <td>${s.zone || '—'}</td>
+            <td><span class="role-badge" style="background:rgba(255,87,34,0.15);color:#ff7043;border-color:rgba(255,87,34,0.3)">${LABEL[s.type] || s.type}</span>${aiTag}</td>
+            <td>${submitter}</td>
+            <td>${s.zone || s.location || '—'}</td>
             <td><span class="sub-badge ${SEV_MAP[sev] || 'badge-info'}">${sev}</span></td>
             <td style="color:#94a3b8;font-size:0.85rem">${ts}</td>
-            <td><span class="status-dot active"></span> Pending</td>
+            <td><span class="status-dot active"></span> ${s.status || 'open'}</td>
         </tr>`;
     }).join('');
 }
@@ -455,7 +485,7 @@ async function runDetection() {
         }
 
         // Call API
-        const response = await fetch('http://localhost:5000/api/ai/sensor-fusion', {
+        const response = await fetch(`${API_BASE}/ai/sensor-fusion`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -566,7 +596,7 @@ async function createAlertFromDetection() {
         const smokePPM = parseInt(document.getElementById('smokePPM')?.value) || 0;
         const temperature = parseInt(document.getElementById('temperature')?.value) || 0;
 
-        const response = await fetch('http://localhost:5000/api/alerts', {
+        const response = await fetch(`${API_BASE}/alerts`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -615,7 +645,7 @@ async function logComplianceFromDetection() {
         const score = parseInt(riskSummary.querySelector('.risk-score')?.textContent?.split(':')[1]?.split('/')[0]) || 0;
         const status = score > 80 ? 'non-compliant' : score > 50 ? 'partial' : 'compliant';
 
-        const response = await fetch('http://localhost:5000/api/compliance/logs', {
+        const response = await fetch(`${API_BASE}/compliance/logs`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

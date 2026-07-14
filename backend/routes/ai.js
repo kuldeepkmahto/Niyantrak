@@ -4,10 +4,27 @@ const Checklist  = require('../models/Checklist');
 const Alert      = require('../models/Alert');
 const User       = require('../models/User');
 const { analyzeChecklist, getZoneRiskReport, predictIncidentRisk } = require('../utils/aiDetection');
+const { triageReport } = require('../utils/aiTriage');
 const { protect, authorize } = require('../middleware/auth');
 
 const router = express.Router();
 router.use(protect);
+
+// ── POST /api/ai/triage ───────────────────────────────
+// NLP auto-triage: given a report type + freeform description, suggest a
+// severity, hazard category, one-line summary, and key risks. Called live
+// from the report forms (e.g. via an "AI Assist" button) before submission,
+// and automatically re-run server-side when the report is actually saved.
+router.post('/triage', async (req, res, next) => {
+  try {
+    const { type, description, zone } = req.body;
+    if (!description || !description.trim()) {
+      return res.status(400).json({ success: false, message: 'Description is required for triage.' });
+    }
+    const result = await triageReport({ type, description, zone });
+    res.json({ success: true, data: result });
+  } catch (err) { next(err); }
+});
 
 // ── POST /api/ai/sensor-fusion ────────────────────────
 // Accepts sensor + vision inputs, returns an early hazard detection result.

@@ -618,6 +618,7 @@
     <span id="toastMsg"></span>
 </div>
 
+<script src="api.js"></script>
 <script src="script.js"></script>
 <script>
 // ── Navigation ────────────────────────────
@@ -747,7 +748,7 @@ function resetChecklist(key) {
     saveChecklistState();
 }
 
-function submitChecklist(key) {
+async function submitChecklist(key) {
     const items   = CHECKLISTS[key];
     const done    = Object.values(checklistState[key]).filter(Boolean).length;
     const required = items.filter(i => i.priority === 'high').length;
@@ -758,10 +759,62 @@ function submitChecklist(key) {
         return;
     }
 
-    const entry = getCurrentChecklistEntry(key);
-    saveChecklistHistoryEntry(entry);
-    renderChecklistAnalysis(key);
-    showToast(`Checklist submitted! ${done}/${items.length} items completed.`, 'success');
+    const checkedItems = items.map((item, i) => ({
+        label: item.label,
+        priority: item.priority,
+        checked: Boolean(checklistState[key][i]),
+    }));
+
+    const submitBtn = document.querySelector(`#tab-${key} .cl-submit-btn`);
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing…'; }
+
+    try {
+        const { ok, data } = await apiFetch('/ai/analyze-checklist', {
+            method: 'POST',
+            body: JSON.stringify({ checklistType: key, items: checkedItems, shiftDate: new Date().toISOString() }),
+        });
+
+        if (ok && data?.data) {
+            renderServerChecklistAnalysis(key, data.data);
+            showToast(`Checklist submitted! AI risk score: ${data.data.riskScore}/100 (${data.data.riskLevel}).`,
+                data.data.riskLevel === 'critical' || data.data.riskLevel === 'high' ? 'warning' : 'success');
+        } else {
+            // Backend unreachable or errored — fall back to local heuristic so
+            // the fireman still gets useful feedback offline.
+            const entry = getCurrentChecklistEntry(key);
+            saveChecklistHistoryEntry(entry);
+            renderChecklistAnalysis(key);
+            showToast(`Checklist saved locally (server unavailable). ${done}/${items.length} items completed.`, 'warning');
+        }
+    } catch (err) {
+        const entry = getCurrentChecklistEntry(key);
+        saveChecklistHistoryEntry(entry);
+        renderChecklistAnalysis(key);
+        showToast('Could not reach the server — checklist saved locally instead.', 'warning');
+    } finally {
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fas fa-check"></i> Submit Checklist'; }
+    }
+}
+
+// Renders the AI risk-engine's real analysis (from utils/aiDetection.js on the
+// backend — factors in this user's checklist history, repeated misses, and
+// recent incidents/alerts in the zone, not just this single submission).
+function renderServerChecklistAnalysis(key, result) {
+    const summaryEl = document.getElementById(`analysis-${key}-summary`);
+    const detailsEl = document.getElementById(`analysis-${key}-details`);
+    const statusClass = result.riskLevel === 'critical' || result.riskLevel === 'high' ? 'threat'
+        : result.riskLevel === 'medium' ? 'warning' : 'safe';
+
+    if (summaryEl) {
+        summaryEl.textContent = `${result.riskLabel} — AI Risk Score: ${result.riskScore}/100`;
+        summaryEl.className = `analysis-summary ${statusClass}`;
+    }
+    if (detailsEl) {
+        const items = [...(result.flags || []), ...(result.recommendations || [])];
+        detailsEl.innerHTML = items.length
+            ? items.map(d => `<li>${d}</li>`).join('')
+            : '<li>No issues detected — checklist is in good shape.</li>';
+    }
 }
 
 function saveChecklistState() {
@@ -919,6 +972,7 @@ function handlePhotos(files) {
 
 // ── Init ──────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+    if (!requireAuth('firemen')) return;
     loadChecklistState();
     renderChecklist('preshift');
     renderChecklist('equipment');

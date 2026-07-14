@@ -4,6 +4,9 @@ const multer   = require('multer');
 const path     = require('path');
 const Incident = require('../models/Incident');
 const { protect, authorize } = require('../middleware/auth');
+const { triageReport } = require('../utils/aiTriage');
+
+const SEVERITY_SCORE = { low: 15, medium: 40, high: 70, critical: 95 };
 
 const router = express.Router();
 
@@ -43,10 +46,27 @@ router.post('/', upload.array('attachments', 5), async (req, res, next) => {
       size:         f.size,
     }));
 
+    // Best-effort AI auto-triage of the freeform description. Never blocks
+    // or fails the submission — if this throws, the report still saves.
+    let aiTriage = null;
+    let aiRiskScore = null;
+    let aiFlags = [];
+    try {
+      const result = await triageReport({ type: body.type, description: body.description, zone: body.zone });
+      aiTriage = { ...result, analyzedAt: new Date() };
+      aiRiskScore = SEVERITY_SCORE[result.suggestedSeverity] ?? null;
+      aiFlags = result.keyRisks || [];
+    } catch (err) {
+      console.warn('[incidents] AI triage skipped:', err.message);
+    }
+
     const incident = await Incident.create({
       ...body,
       submittedBy: req.user._id,
       attachments,
+      aiTriage,
+      aiRiskScore,
+      aiFlags,
     });
 
     await incident.populate('submittedBy', 'fullname email role');
