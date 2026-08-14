@@ -223,6 +223,43 @@ router.get('/recommendations', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// ── GET /api/ai/model-metrics — live accuracy/metrics from the ML service ──
+// Proxies serve_model.py's /metadata endpoint so the frontend never talks
+// to the Python service directly (keeps auth + CORS simple). Returns a
+// clear "offline" status if the ML service isn't running instead of
+// erroring, so the dashboard card can show that gracefully.
+router.get('/model-metrics', authorize('admin', 'safetyofficer'), async (req, res, next) => {
+  try {
+    const ML_SERVICE_URL = process.env.ML_SERVICE_URL || 'http://localhost:8001';
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 2000);
+
+    const resp = await fetch(`${ML_SERVICE_URL}/metadata`, { signal: controller.signal });
+    clearTimeout(timeout);
+
+    if (!resp.ok) {
+      return res.json({ success: true, data: { modelOnline: false } });
+    }
+
+    const metadata = await resp.json();
+    res.json({
+      success: true,
+      data: {
+        modelOnline: true,
+        accuracy: metadata.metrics?.accuracy ?? null,
+        rocAuc: metadata.metrics?.roc_auc ?? null,
+        confusionMatrix: metadata.metrics?.confusion_matrix ?? null,
+        topFeatures: Object.entries(metadata.feature_importances || {})
+          .slice(0, 5)
+          .map(([feature, importance]) => ({ feature, importance })),
+      },
+    });
+  } catch (err) {
+    // ML service unreachable — not a hard error, just report offline.
+    res.json({ success: true, data: { modelOnline: false } });
+  }
+});
+
 // ── GET /api/ai/dashboard — admin-wide AI summary ─────────
 router.get('/dashboard', authorize('admin', 'safetyofficer'), async (req, res, next) => {
   try {

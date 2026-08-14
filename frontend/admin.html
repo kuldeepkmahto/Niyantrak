@@ -58,13 +58,13 @@
         <!-- TOPBAR -->
         <div class="topbar">
             <div class="topbar-left">
-                <button id="toggleSidebar" class="toggle-btn"><i class="fas fa-bars"></i></button>
+                <button id="toggleSidebar" class="toggle-btn" type="button" aria-label="Toggle sidebar" title="Toggle sidebar"><i class="fas fa-bars"></i></button>
                 <h1 id="pageTitle">🔥 Admin Command Center</h1>
             </div>
             <div class="topbar-actions">
                 <div class="search">
                     <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Search..." id="globalSearch">
+                    <input type="text" placeholder="Search..." id="globalSearch" aria-label="Search dashboard" title="Search dashboard">
                 </div>
                 <div class="notif-btn">
                     <i class="fas fa-bell"></i>
@@ -94,7 +94,7 @@
                     <button class="btn-danger" id="evacuateBtn">
                         <i class="fas fa-running"></i> Initiate Evacuation
                     </button>
-                    <button class="btn-dismiss" onclick="this.closest('.alert-panel').style.display='none'">
+                    <button class="btn-dismiss" type="button" aria-label="Dismiss alert" title="Dismiss alert" onclick="this.closest('.alert-panel').style.display='none'">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
@@ -136,6 +136,19 @@
                 </div>
             </div>
 
+            <!-- AI MODEL PERFORMANCE CARD -->
+            <div class="ai-model-card" id="aiModelCard">
+                <div class="ai-model-header">
+                    <h3><i class="fas fa-brain"></i> Checklist Risk Model</h3>
+                    <span class="ai-model-status" id="aiModelStatus">
+                        <span class="status-dot"></span> Checking…
+                    </span>
+                </div>
+                <div class="ai-model-body" id="aiModelBody">
+                    <p class="ai-model-loading">Loading model metrics…</p>
+                </div>
+            </div>
+
             <!-- MINI CHARTS ROW -->
             <div class="charts-row">
                 <div class="chart-card wide">
@@ -165,7 +178,7 @@
             <div class="chart-card">
                 <div class="chart-header">
                     <h3><i class="fas fa-map-marker-alt"></i> Incidents by Zone</h3>
-                    <select class="chart-filter" id="zoneFilter">
+                    <select class="chart-filter" id="zoneFilter" aria-label="Filter incidents by range" title="Filter incidents by range">
                         <option>This Month</option>
                         <option>Last 3 Months</option>
                         <option>This Year</option>
@@ -212,15 +225,15 @@
             </div>
 
             <div class="filter-bar">
-                <input type="text" id="userSearch" placeholder="Search users..." class="filter-input">
-                <select id="roleFilter" class="filter-select">
+                <input type="text" id="userSearch" placeholder="Search users..." class="filter-input" aria-label="Search users" title="Search users">
+                <select id="roleFilter" class="filter-select" aria-label="Filter by role" title="Filter by role">
                     <option value="">All Roles</option>
                     <option value="admin">Admin</option>
                     <option value="employee">Employee</option>
                     <option value="firemen">Firemen</option>
                     <option value="safetyofficer">Safety Officer</option>
                 </select>
-                <select id="statusFilter" class="filter-select">
+                <select id="statusFilter" class="filter-select" aria-label="Filter by status" title="Filter by status">
                     <option value="">All Status</option>
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
@@ -267,23 +280,23 @@
                 <div class="sensor-grid">
                     <div class="sensor-input">
                         <label>Smoke (PPM)</label>
-                        <input type="number" id="smokePPM" value="40" min="0" max="100">
+                        <input type="number" id="smokePPM" value="40" min="0" max="100" title="Smoke level in PPM" aria-label="Smoke level in PPM">
                     </div>
                     <div class="sensor-input">
                         <label>Temperature (°C)</label>
-                        <input type="number" id="temperature" value="58" min="0" max="100">
+                        <input type="number" id="temperature" value="58" min="0" max="100" title="Temperature in degrees Celsius" aria-label="Temperature in degrees Celsius">
                     </div>
                     <div class="sensor-input">
                         <label>CO (PPM)</label>
-                        <input type="number" id="carbonMonoxide" value="65" min="0" max="200">
+                        <input type="number" id="carbonMonoxide" value="65" min="0" max="200" title="Carbon monoxide in PPM" aria-label="Carbon monoxide in PPM">
                     </div>
                     <div class="sensor-input">
                         <label>Sound Level (dB)</label>
-                        <input type="number" id="soundLevel" value="88" min="0" max="120">
+                        <input type="number" id="soundLevel" value="88" min="0" max="120" title="Sound level in decibels" aria-label="Sound level in decibels">
                     </div>
                     <div class="sensor-input">
                         <label>Zone</label>
-                        <select id="detectionZone">
+                        <select id="detectionZone" title="Detection zone" aria-label="Detection zone">
                             <option value="Warehouse A - Zone 1">Warehouse A - Zone 1</option>
                             <option value="Warehouse A - Zone 2">Warehouse A - Zone 2</option>
                             <option value="Warehouse A - Zone 3" selected>Warehouse A - Zone 3</option>
@@ -294,13 +307,13 @@
                     </div>
                     <div class="sensor-input">
                         <label>Camera Alert</label>
-                        <input type="checkbox" id="cameraAlert" checked>
+                        <input type="checkbox" id="cameraAlert" checked title="Camera alert enabled" aria-label="Camera alert enabled">
                     </div>
                 </div>
             </div>
 
             <!-- Detection Results -->
-            <div class="detection-results" id="detectionResults" style="display: none;">
+            <div class="detection-results" id="detectionResults" hidden>
                 <h3>Analysis Results</h3>
                 <div class="risk-summary" id="riskSummary"></div>
                 <div class="sensor-flags" id="sensorFlags"></div>
@@ -357,45 +370,66 @@
                 </table>
             </div>
         </div>
-
-        <!-- ═══ REPORTS ═══ -->
         <div id="section-reports" class="admin-section">
             <h2 class="admin-section-title"><i class="fas fa-file-alt"></i> Submitted Reports</h2>
 
+            <div class="reports-toolbar">
+                <div class="reports-filters">
+                    <select id="reportsFilterType" class="reports-filter-select">
+                        <option value="">All Types</option>
+                        <option value="near-miss">Near Miss</option>
+                        <option value="unsafe-condition">Unsafe Condition</option>
+                        <option value="work-permit">Work Permit</option>
+                        <option value="incident-report">Incident Report</option>
+                    </select>
+                    <select id="reportsFilterSeverity" class="reports-filter-select">
+                        <option value="">All Severities</option>
+                        <option value="critical">Critical</option>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                    <select id="reportsFilterStatus" class="reports-filter-select">
+                        <option value="">All Statuses</option>
+                        <option value="open">Open</option>
+                        <option value="under-review">Under Review</option>
+                        <option value="pending-approval">Pending Approval</option>
+                        <option value="resolved">Resolved</option>
+                        <option value="closed">Closed</option>
+                    </select>
+                </div>
+                <div class="reports-live-toggle">
+                    <label class="live-switch">
+                        <input type="checkbox" id="reportsLiveToggle" checked>
+                        <span class="live-switch-slider"></span>
+                    </label>
+                    <span id="reportsLiveLabel"><span class="live-dot"></span> Live</span>
+                </div>
+            </div>
+
             <div class="stats-table-card">
+                <div class="reports-meta" id="reportsMeta">Loading…</div>
                 <table class="data-table">
                     <thead>
                         <tr><th>Type</th><th>Submitted By</th><th>Zone</th><th>Severity</th><th>Date</th><th>Status</th></tr>
                     </thead>
                     <tbody id="reportsTableBody"></tbody>
                 </table>
+                <div class="reports-pagination">
+                    <button class="reports-page-btn" id="reportsPrevBtn"><i class="fas fa-chevron-left"></i> Prev</button>
+                    <span id="reportsPageIndicator">Page 1</span>
+                    <button class="reports-page-btn" id="reportsNextBtn">Next <i class="fas fa-chevron-right"></i></button>
+                </div>
             </div>
         </div>
 
     </main>
 </div>
-
-<!-- EVACUATION MODAL -->
-<div id="evacuationModal" class="modal-overlay" style="display:none">
-    <div class="modal-box">
-        <div class="modal-icon danger"><i class="fas fa-running"></i></div>
-        <h2>Initiate Evacuation?</h2>
-        <p>This will trigger alarms across <strong>Warehouse A — Zone 3</strong> and notify all on-site personnel and emergency teams.</p>
-        <div class="modal-actions">
-            <button class="btn-modal-cancel" onclick="closeModal()">Cancel</button>
-            <button class="btn-modal-confirm" onclick="confirmEvacuation()">
-                <i class="fas fa-exclamation-triangle"></i> Confirm Evacuation
-            </button>
-        </div>
-    </div>
-</div>
-
 <div id="toast" class="toast">
     <i class="fas fa-check-circle" id="toastIcon"></i>
     <span id="toastMsg"></span>
 </div>
 <script src="api.js"></script>
-<script src="script.js"></script>
 <script src="admin.js"></script>
 </body>
 </html>

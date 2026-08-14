@@ -15,15 +15,22 @@ Run with PowerShell:
 ```
 
 ### Manual Start
-If you prefer manual control:
+If you prefer manual control, start all three services:
 
 **Terminal 1 - Backend:**
 ```bash
 cd backend
+npm run seed
 npm start
 ```
 
-**Terminal 2 - Frontend:**
+**Terminal 2 - ML Service:**
+```bash
+cd backend/ml
+uvicorn serve_model:app --host 0.0.0.0 --port 8001
+```
+
+**Terminal 3 - Frontend:**
 ```bash
 cd frontend
 python -m http.server 3000
@@ -32,6 +39,7 @@ python -m http.server 3000
 ## Access the Application
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:5000
+- **ML Service**: http://localhost:8001
 - **Health Check**: http://localhost:5000/api/health
 
 ## Core Features
@@ -41,9 +49,9 @@ python -m http.server 3000
 - Checklist intelligence with risk scoring, trend analysis, and safety recommendations
 
 ## Demo Credentials
-- **Admin**: test@admin.com / 123
-- **Employee**: test@employee.com / 123
-- **Firemen**: test@firemen.com / 123
+- **Admin**: test@admin.com / Admin@123
+- **Employee**: test@employee.com / Emp@12345
+- **Firemen**: test@firemen.com / Fire@1234
 
 ## Requirements
 - Node.js (for backend)
@@ -53,4 +61,4 @@ python -m http.server 3000
 ## Development
 - Backend dev mode: `npm run dev`
 - Frontend: Served via Python HTTP server
-- Demo data is now sourced from `backend/data/demoDataset.json` and loaded by `backend/utils/seed.js`
+- Demo data is sourced from `backend/data/demoDataset.json` and loaded by `backend/utils/seed.js`

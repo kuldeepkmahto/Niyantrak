@@ -7,9 +7,9 @@ const API_BASE = 'http://localhost:5000/api';
 
 // Demo credentials (fallback)
 const DEMO_USERS = {
-    'test@admin.com': { password: '123', role: 'admin' },
-    'test@employee.com': { password: '123', role: 'employee' },
-    'test@firemen.com': { password: '123', role: 'firemen' }
+    'test@admin.com': { password: 'Admin@123', role: 'admin' },
+    'test@employee.com': { password: 'Emp@12345', role: 'employee' },
+    'test@firemen.com': { password: 'Fire@1234', role: 'firemen' }
 };
 
 // Universal page initialization
@@ -174,8 +174,6 @@ async function initLogin() {
 async function handleLogin() {
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
-    const roleSelect = document.getElementById('role');
-    const role = roleSelect ? roleSelect.value : DEMO_USERS[email]?.role;
     const message = document.getElementById('message');
     
     if (!email || !password) {
@@ -185,19 +183,15 @@ async function handleLogin() {
     
     // Demo mode check (works offline)
     if (DEMO_USERS[email] && DEMO_USERS[email].password === password) {
-        if (DEMO_USERS[email].role === role || !roleSelect) {
-            sessionStorage.setItem('token', 'demo-token-' + Date.now()); // Fake token for demo
-            sessionStorage.setItem('user', JSON.stringify({ 
-                email, 
-                role: DEMO_USERS[email].role 
-            }));
-            showMessage(`Demo: Welcome ${DEMO_USERS[email].role.toUpperCase()}!`, 'success');
-            setTimeout(() => {
-                window.location.href = `${DEMO_USERS[email].role}.html`;
-            }, 1200);
-        } else {
-            showMessage('Role mismatch for demo user', 'error');
-        }
+        sessionStorage.setItem('token', 'demo-token-' + Date.now()); // Fake token for demo
+        sessionStorage.setItem('user', JSON.stringify({
+            email,
+            role: DEMO_USERS[email].role
+        }));
+        showMessage(`Demo: Welcome ${DEMO_USERS[email].role.toUpperCase()}!`, 'success');
+        setTimeout(() => {
+            window.location.href = `${DEMO_USERS[email].role}.html`;
+        }, 1200);
         return;
     }
     
@@ -221,15 +215,15 @@ async function handleLogin() {
             }, 1200);
         } else {
             showMessage(data.message || 'Backend login failed → Using demo mode', 'warning');
-            handleDemoLogin(email, password, role, message);
+            handleDemoLogin(email, password);
         }
     } catch (error) {
         showMessage('Backend offline → Demo mode active', 'warning');
-        handleDemoLogin(email, password, role, message);
+        handleDemoLogin(email, password);
     }
 }
 
-function handleDemoLogin(email, password, role, message) {
+function handleDemoLogin(email, password) {
     if (DEMO_USERS[email] && DEMO_USERS[email].password === password) {
         sessionStorage.setItem('token', 'demo-token-' + Date.now()); // Fake token for demo
         sessionStorage.setItem('user', JSON.stringify({ email, role: DEMO_USERS[email].role }));

@@ -14,12 +14,12 @@ function showAdminSection(id) {
     navItems.forEach(btn => btn.classList.toggle('active', btn.dataset.section === id));
 
     const titles = {
-        overview:  '🔥 Admin Command Center',
-        analytics: '📊 Analytics',
-        users:     '👥 User Management',
-        alerts:    '🔔 Alert Management',
-        detection: '🤖 AI Detection',
-        reports:   '📄 Submitted Reports'
+        overview:  'Admin Command Center',
+        analytics: 'Analytics',
+        users:     'User Management',
+        alerts:    'Alert Management',
+        detection: 'AI Detection',
+        reports:   'Submitted Reports'
     };
     const el = document.getElementById('pageTitle');
     if (el) el.textContent = titles[id] || 'Admin';
@@ -50,11 +50,13 @@ document.getElementById('logoutBtn')?.addEventListener('click', () => {
 
 // ── Evacuation modal ─────────────────────
 document.getElementById('evacuateBtn')?.addEventListener('click', () => {
-    document.getElementById('evacuationModal').style.display = 'flex';
+    const modal = document.getElementById('evacuationModal');
+    if (modal) modal.hidden = false;
 });
 
 function closeModal() {
-    document.getElementById('evacuationModal').style.display = 'none';
+    const modal = document.getElementById('evacuationModal');
+    if (modal) modal.hidden = true;
 }
 
 function confirmEvacuation() {
@@ -405,14 +407,41 @@ async function resolveAlert(id) {
 
 
 // ── Reports (real data from backend) ──────
+// ── SUBMITTED REPORTS (paginated, filterable, live) ────
+const reportsState = { page: 1, limit: 20, pages: 1, total: 0, pollTimer: null };
+
+function reportsQueryParams() {
+    const type     = document.getElementById('reportsFilterType')?.value || '';
+    const severity = document.getElementById('reportsFilterSeverity')?.value || '';
+    const status   = document.getElementById('reportsFilterStatus')?.value || '';
+    const params = new URLSearchParams({ page: reportsState.page, limit: reportsState.limit });
+    if (type)     params.set('type', type);
+    if (severity) params.set('severity', severity);
+    if (status)   params.set('status', status);
+    return params.toString();
+}
+
 async function renderReportsTable() {
     const tbody = document.getElementById('reportsTableBody');
+    const meta  = document.getElementById('reportsMeta');
     if (!tbody) return;
 
-    const { ok, data } = await apiFetch('/incidents?limit=20');
+    const { ok, data } = await apiFetch(`/incidents?${reportsQueryParams()}`);
+
     if (!ok || !data?.data?.length) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#64748b;padding:2rem">No reports yet — employees haven\'t submitted any, or the backend is unreachable</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#64748b;padding:2rem">No reports match these filters, or the backend is unreachable</td></tr>';
+        if (meta) meta.textContent = 'No reports found';
+        updateReportsPaginationUI(0, 1);
         return;
+    }
+
+    reportsState.total = data.total ?? data.data.length;
+    reportsState.pages = data.pages ?? 1;
+
+    if (meta) {
+        const start = (reportsState.page - 1) * reportsState.limit + 1;
+        const end   = start + data.data.length - 1;
+        meta.textContent = `Showing ${start}–${end} of ${reportsState.total.toLocaleString()} reports`;
     }
 
     const LABEL = { 'near-miss': 'Near Miss', 'unsafe-condition': 'Unsafe Condition', 'work-permit': 'Work Permit', 'incident-report': 'Incident Report' };
@@ -435,6 +464,46 @@ async function renderReportsTable() {
             <td><span class="status-dot active"></span> ${s.status || 'open'}</td>
         </tr>`;
     }).join('');
+
+    updateReportsPaginationUI(reportsState.total, reportsState.pages);
+}
+
+function updateReportsPaginationUI(total, pages) {
+    const indicator = document.getElementById('reportsPageIndicator');
+    const prevBtn = document.getElementById('reportsPrevBtn');
+    const nextBtn = document.getElementById('reportsNextBtn');
+    if (indicator) indicator.textContent = `Page ${reportsState.page} of ${Math.max(pages, 1)}`;
+    if (prevBtn) prevBtn.disabled = reportsState.page <= 1;
+    if (nextBtn) nextBtn.disabled = reportsState.page >= pages;
+}
+
+function initReportsControls() {
+    document.getElementById('reportsFilterType')?.addEventListener('change', () => { reportsState.page = 1; renderReportsTable(); });
+    document.getElementById('reportsFilterSeverity')?.addEventListener('change', () => { reportsState.page = 1; renderReportsTable(); });
+    document.getElementById('reportsFilterStatus')?.addEventListener('change', () => { reportsState.page = 1; renderReportsTable(); });
+
+    document.getElementById('reportsPrevBtn')?.addEventListener('click', () => {
+        if (reportsState.page > 1) { reportsState.page--; renderReportsTable(); }
+    });
+    document.getElementById('reportsNextBtn')?.addEventListener('click', () => {
+        if (reportsState.page < reportsState.pages) { reportsState.page++; renderReportsTable(); }
+    });
+
+    const liveToggle = document.getElementById('reportsLiveToggle');
+    const liveLabel  = document.getElementById('reportsLiveLabel');
+    function setLivePolling(on) {
+        if (reportsState.pollTimer) clearInterval(reportsState.pollTimer);
+        if (on) {
+            reportsState.pollTimer = setInterval(() => {
+                // Only auto-refresh while looking at page 1, so it doesn't
+                // yank an admin mid-review back to the top of the list.
+                if (reportsState.page === 1) renderReportsTable();
+            }, 15000);
+        }
+        if (liveLabel) liveLabel.style.opacity = on ? '1' : '0.5';
+    }
+    liveToggle?.addEventListener('change', e => setLivePolling(e.target.checked));
+    setLivePolling(liveToggle ? liveToggle.checked : true);
 }
 
 // ── AI Detection Functionality ───────────
@@ -569,7 +638,7 @@ function displayDetectionResults(data) {
     `;
 
     // Show results
-    resultsDiv.style.display = 'block';
+    resultsDiv.hidden = false;
     resultsDiv.scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -679,6 +748,61 @@ document.getElementById('createAlertBtn')?.addEventListener('click', createAlert
 document.getElementById('logComplianceBtn')?.addEventListener('click', logComplianceFromDetection);
 
 // ── Init ─────────────────────────────────
+// ── AI MODEL PERFORMANCE CARD ──────────────────────────
+async function loadAiModelMetrics() {
+    const statusEl = document.getElementById('aiModelStatus');
+    const bodyEl   = document.getElementById('aiModelBody');
+    if (!statusEl || !bodyEl) return;
+
+    const { ok, data } = await apiFetch('/ai/model-metrics');
+    const metrics = ok && data?.data ? data.data : { modelOnline: false };
+
+    if (!metrics.modelOnline) {
+        statusEl.className = 'ai-model-status offline';
+        statusEl.innerHTML = '<span class="status-dot"></span> Offline';
+        bodyEl.innerHTML = `<p class="ai-model-offline-msg">
+            The ML risk-scoring service isn't reachable right now. Start it with
+            <code>uvicorn serve_model:app --host 0.0.0.0 --port 8001</code> in
+            <code>backend/ml</code> to see live accuracy metrics here.
+        </p>`;
+        return;
+    }
+
+    statusEl.className = 'ai-model-status online';
+    statusEl.innerHTML = '<span class="status-dot"></span> Live';
+
+    const accuracyPct = metrics.accuracy != null ? Math.round(metrics.accuracy * 100) : null;
+    const aucPct      = metrics.rocAuc   != null ? Math.round(metrics.rocAuc * 100)   : null;
+
+    const featureRows = (metrics.topFeatures || []).map(f => {
+        const pct = Math.round(f.importance * 100);
+        return `
+            <div class="ai-feature-row">
+                <span class="ai-feature-name">${f.feature.replace(/_/g, ' ')}</span>
+                <div class="ai-feature-bar-track"><div class="ai-feature-bar-fill" style="width:${pct}%"></div></div>
+                <span class="ai-feature-pct">${pct}%</span>
+            </div>`;
+    }).join('');
+
+    bodyEl.innerHTML = `
+        <div class="ai-model-metrics-row">
+            <div class="ai-metric-box">
+                <div class="ai-metric-value">${accuracyPct != null ? accuracyPct + '%' : '—'}</div>
+                <div class="ai-metric-label">Accuracy</div>
+            </div>
+            <div class="ai-metric-box">
+                <div class="ai-metric-value">${aucPct != null ? aucPct + '%' : '—'}</div>
+                <div class="ai-metric-label">ROC-AUC</div>
+            </div>
+            <div class="ai-metric-box">
+                <div class="ai-metric-value">${metrics.topFeatures?.length || 0}</div>
+                <div class="ai-metric-label">Features Used</div>
+            </div>
+        </div>
+        ${featureRows ? `<div class="ai-feature-list">${featureRows}</div>` : ''}
+    `;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     // Check authentication
     const token = sessionStorage.getItem('token') || localStorage.getItem('token');
@@ -692,6 +816,9 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
+    // Load AI model performance card
+    loadAiModelMetrics();
+
     // Build overview charts
     buildAlertTrendChart();
     buildComplianceChart();
@@ -701,6 +828,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderUsersTable();
     renderAlertsGrid();
     renderReportsTable();
+    initReportsControls();
 
     // Set admin name from session
     const profileSpan = document.querySelector('.profile span');

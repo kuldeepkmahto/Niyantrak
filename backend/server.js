@@ -25,8 +25,15 @@ app.use(cors({
     const allowed = (process.env.CLIENT_ORIGIN || 'http://localhost:5500,http://localhost:3000,http://localhost:8080')
       .split(',').map(o => o.trim());
     // Allow requests with no origin (mobile, Postman, curl)
-    // Allow any localhost origin for development
-    if (!origin || allowed.includes(origin) || origin.startsWith('http://localhost:')) return cb(null, true);
+    // Allow localhost and loopback origins for development
+    if (
+      !origin ||
+      allowed.includes(origin) ||
+      origin.startsWith('http://localhost:') ||
+      origin.startsWith('http://127.0.0.1:') ||
+      origin.startsWith('https://localhost:') ||
+      origin.startsWith('https://127.0.0.1:')
+    ) return cb(null, true);
     cb(new Error(`CORS blocked for origin: ${origin}`));
   },
   credentials: true,

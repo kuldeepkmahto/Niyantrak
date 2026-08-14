@@ -10,6 +10,7 @@
     right: 0;
     z-index: 1000;
     background: rgba(10, 10, 21, 0.98);
+    -webkit-backdrop-filter: blur(30px);
     backdrop-filter: blur(30px);
     border-bottom: 1px solid rgba(255, 87, 34, 0.2);
     padding: 1.25rem 2.5rem;
@@ -115,6 +116,7 @@
     justify-content: center;
     gap: 0.75rem;
     color: white;
+    -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
 }
 
@@ -231,7 +233,9 @@
 
 .form-card {
     background: rgba(255,255,255,0.04);
-    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+
     border: 1px solid rgba(255,255,255,0.09);
     border-radius: 20px;
     padding: 2rem 2.5rem;
@@ -307,6 +311,7 @@
     font-size: 0.88rem;
     color: #cbd5e1;
     transition: all 0.2s;
+    -webkit-user-select: none;
     user-select: none;
 }
 
@@ -426,7 +431,8 @@
     bottom: 2rem;
     right: 2rem;
     background: rgba(30,30,50,0.97);
-    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
     border: 1px solid rgba(76,175,80,0.4);
     color: #86efac;
     padding: 1rem 1.5rem;
@@ -485,3 +491,4 @@
     .form-actions { flex-direction: column; }
     .btn-submit, .btn-outline { width: 100%; justify-content: center; }
 }
+

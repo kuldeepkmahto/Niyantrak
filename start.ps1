@@ -6,10 +6,20 @@ Write-Host ""
 Write-Host "Starting Backend Server..." -ForegroundColor Yellow
 $backendJob = Start-Job -ScriptBlock {
     Set-Location "$using:PSScriptRoot\backend"
-    npm start
+    npm run start:demo
 }
 
 Start-Sleep -Seconds 3
+
+# Start ML risk service
+Write-Host "Starting ML Risk Service..." -ForegroundColor Yellow
+$mlJob = Start-Job -ScriptBlock {
+    Set-Location "$using:PSScriptRoot\backend\ml"
+    & "$using:PSScriptRoot\.venv\Scripts\Activate.ps1"
+    uvicorn serve_model:app --host 0.0.0.0 --port 8001
+}
+
+Start-Sleep -Seconds 2
 
 # Start Frontend  
 Write-Host "Starting Frontend Server..." -ForegroundColor Yellow
@@ -21,15 +31,16 @@ $frontendJob = Start-Job -ScriptBlock {
 Write-Host ""
 Write-Host "Servers starting..." -ForegroundColor Green
 Write-Host "Backend: http://localhost:5000" -ForegroundColor Cyan
+Write-Host "ML Service: http://localhost:8001" -ForegroundColor Cyan
 Write-Host "Frontend: http://localhost:3000" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Press Ctrl+C to stop all servers..." -ForegroundColor Red
 
 # Wait for jobs
 try {
-    Wait-Job -Job $backendJob, $frontendJob
+    Wait-Job -Job $backendJob, $mlJob, $frontendJob
 } finally {
     Write-Host "Stopping servers..." -ForegroundColor Yellow
-    Stop-Job -Job $backendJob, $frontendJob
-    Remove-Job -Job $backendJob, $frontendJob
+    Stop-Job -Job $backendJob, $mlJob, $frontendJob
+    Remove-Job -Job $backendJob, $mlJob, $frontendJob
 }

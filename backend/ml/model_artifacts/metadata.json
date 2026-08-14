@@ -1,0 +1,57 @@
+{
+  "categorical_cols": [
+    "checklist_type"
+  ],
+  "numeric_cols": [
+    "total_items",
+    "checked",
+    "required_total",
+    "required_checked",
+    "completion_pct",
+    "required_pct",
+    "missed_required",
+    "is_night_shift",
+    "rolling_avg_completion_5",
+    "rolling_avg_required_pct_5",
+    "consecutive_low_completion",
+    "repeated_miss_count_7",
+    "recent_incidents_zone_7d",
+    "active_alerts_zone",
+    "equipment_defect_flag"
+  ],
+  "target_col": "incident_within_7d",
+  "metrics": {
+    "accuracy": 0.7425,
+    "roc_auc": 0.6888021020546073,
+    "confusion_matrix": [
+      [
+        827,
+        59
+      ],
+      [
+        250,
+        64
+      ]
+    ]
+  },
+  "feature_importances": {
+    "rolling_avg_completion_5": 0.2570980139074039,
+    "rolling_avg_required_pct_5": 0.20524285478931334,
+    "required_pct": 0.1026557123743196,
+    "consecutive_low_completion": 0.09815109612186858,
+    "completion_pct": 0.07520421640723556,
+    "missed_required": 0.06312505891821,
+    "equipment_defect_flag": 0.04710536928816944,
+    "repeated_miss_count_7": 0.04103626531242012,
+    "recent_incidents_zone_7d": 0.03059493929693065,
+    "checked": 0.02204761869553443,
+    "required_checked": 0.01708608195525284,
+    "active_alerts_zone": 0.011898173544990566,
+    "is_night_shift": 0.01020865247424987,
+    "total_items": 0.006906269785426441,
+    "checklist_type_preshift": 0.004967574220913227,
+    "checklist_type_equipment": 0.0032735507561502354,
+    "checklist_type_postshift": 0.002653947461344392,
+    "required_total": 0.0007446046902667855
+  }
+}

@@ -5,6 +5,7 @@
 const Checklist = require('../models/Checklist');
 const Incident  = require('../models/Incident');
 const Alert     = require('../models/Alert');
+const { buildFeaturesFromHistory, getMlRiskPrediction } = require('./mlRiskClient');
 
 // ── Risk weights ────────────────────────────────────────
 const WEIGHTS = {
@@ -209,6 +210,9 @@ async function getZoneRiskReport(zone, days = 30) {
 }
 
 // ── Predict incident likelihood based on patterns ────────
+// Tries the trained ML model first (see ml/serve_model.py); if it's
+// unreachable or errors, transparently falls back to the original
+// fixed-weight heuristic below so this never breaks in dev/offline mode.
 async function predictIncidentRisk(userId) {
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
@@ -221,12 +225,54 @@ async function predictIncidentRisk(userId) {
     return { message: 'Insufficient data. Need at least 3 checklist submissions for prediction.', prediction: null };
   }
 
+  const latestChecklist = checklists[0];
+  const zone = latestChecklist.zone;
+
+  const [zoneIncidents7d, activeAlertsInZone] = await Promise.all([
+    zone ? Incident.countDocuments({
+      location: { $regex: zone, $options: 'i' },
+      incidentDate: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+      status: { $ne: 'resolved' },
+    }) : Promise.resolve(0),
+    zone ? Alert.countDocuments({
+      location: { $regex: zone, $options: 'i' },
+      status: { $in: ['active', 'acknowledged', 'escalated'] },
+    }) : Promise.resolve(0),
+  ]);
+
+  const features = buildFeaturesFromHistory({
+    latestChecklist, history: checklists, zoneIncidents7d, activeAlertsInZone,
+  });
+
+  const mlResult = await getMlRiskPrediction(features);
+
   const avgCompletion = checklists.reduce((a, c) => a + (c.stats?.completionPct || 0), 0) / checklists.length;
   const avgRequired   = checklists.reduce((a, c) => a + (c.stats?.requiredPct  || 0), 0) / checklists.length;
   const recentScore   = checklists[0]?.ai?.riskScore || 0;
-  const incidentRate  = userIncidents.length / 30; // incidents per day
 
-  // Simple weighted incident likelihood score
+  if (mlResult) {
+    return {
+      userId,
+      incidentLikelihood: mlResult.riskScore,
+      riskLevel: mlResult.riskLevel,
+      riskLabel: mlResult.riskLabel,
+      incidentProbability: mlResult.incidentProbability,
+      source: 'ml-model',
+      factors: {
+        avgChecklistCompletion: Math.round(avgCompletion),
+        avgRequiredCompletion:  Math.round(avgRequired),
+        recentRiskScore:        recentScore,
+        incidentsLast30Days:    userIncidents.length,
+      },
+      recommendation: mlResult.riskScore > 50
+        ? 'This employee has a high predicted incident risk. Consider safety coaching or workload review.'
+        : 'Incident risk is within acceptable range. Continue monitoring.',
+      analyzedAt: new Date(),
+    };
+  }
+
+  // ── Fallback: original fixed-weight heuristic (ML service unavailable) ──
+  const incidentRate = userIncidents.length / 30; // incidents per day
   let likelihood = 0;
   if (avgCompletion < 70)   likelihood += 35;
   if (avgRequired < 80)     likelihood += 40;
@@ -241,6 +287,7 @@ async function predictIncidentRisk(userId) {
     incidentLikelihood: likelihood,
     riskLevel: level.level,
     riskLabel: level.label,
+    source: 'heuristic-fallback',
     factors: {
       avgChecklistCompletion: Math.round(avgCompletion),
       avgRequiredCompletion:  Math.round(avgRequired),
