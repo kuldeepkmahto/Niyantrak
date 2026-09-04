@@ -8,7 +8,12 @@ start cmd /k "cd /d %~dp0backend && npm run start:demo"
 timeout /t 3 /nobreak > nul
 
 echo Starting ML Risk Service...
-start cmd /k "cd /d %~dp0backend\ml && call %~dp0.venv\Scripts\activate.bat && uvicorn serve_model:app --host 0.0.0.0 --port 8001"
+start cmd /k "cd /d %~dp0backend\ml && call %~dp0.venv\Scripts\activate.bat && python -m uvicorn serve_model:app --host 0.0.0.0 --port 8001"
+
+timeout /t 2 /nobreak > nul
+
+echo Starting Fire Image Detection Service...
+start cmd /k "cd /d %~dp0backend\ml && call %~dp0.venv\Scripts\activate.bat && python -m uvicorn fire_detection.service:app --host 0.0.0.0 --port 8002"
 
 timeout /t 2 /nobreak > nul
 
@@ -19,6 +24,7 @@ echo.
 echo Servers starting...
 echo Backend: http://localhost:5000
 echo ML Service: http://localhost:8001
+echo Fire Image Service: http://localhost:8002
 echo Frontend: http://localhost:3000
 echo.
 echo Press any key to exit (servers will continue running)...

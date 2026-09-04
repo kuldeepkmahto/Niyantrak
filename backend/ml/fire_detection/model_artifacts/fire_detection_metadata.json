@@ -1,0 +1,15 @@
+{
+  "classes": {
+    "0": "no_fire",
+    "1": "fire"
+  },
+  "imageSize": [
+    64,
+    64
+  ],
+  "threshold": 0.5,
+  "metrics": {
+    "validationAccuracy": 0.8769230769230769,
+    "images": 650
+  }
+}

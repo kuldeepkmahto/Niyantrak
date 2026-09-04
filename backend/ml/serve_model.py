@@ -5,7 +5,12 @@ import joblib
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
-MODEL_DIR = os.environ.get("MODEL_DIR", "model_artifacts")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_DIR_ENV = os.environ.get("MODEL_DIR", "model_artifacts")
+MODEL_DIR = MODEL_DIR_ENV
+if not os.path.isabs(MODEL_DIR):
+    MODEL_DIR = os.path.join(BASE_DIR, MODEL_DIR)
+MODEL_DIR = os.path.abspath(MODEL_DIR)
 MODEL_PATH = os.path.join(MODEL_DIR, "risk_model.joblib")
 METADATA_PATH = os.path.join(MODEL_DIR, "metadata.json")
 

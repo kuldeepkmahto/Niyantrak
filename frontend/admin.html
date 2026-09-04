@@ -277,6 +277,11 @@
             <!-- Sensor Input Panel -->
             <div class="detection-input-panel">
                 <h3>Sensor Readings</h3>
+                <div class="image-detection-input">
+                    <label for="fireImageInput">Fire image</label>
+                    <input type="file" id="fireImageInput" accept="image/*" aria-describedby="fireImageHelp">
+                    <small id="fireImageHelp">Upload a client photo to check it against the trained fire dataset.</small>
+                </div>
                 <div class="sensor-grid">
                     <div class="sensor-input">
                         <label>Smoke (PPM)</label>

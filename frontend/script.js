@@ -181,21 +181,7 @@ async function handleLogin() {
         return;
     }
     
-    // Demo mode check (works offline)
-    if (DEMO_USERS[email] && DEMO_USERS[email].password === password) {
-        sessionStorage.setItem('token', 'demo-token-' + Date.now()); // Fake token for demo
-        sessionStorage.setItem('user', JSON.stringify({
-            email,
-            role: DEMO_USERS[email].role
-        }));
-        showMessage(`Demo: Welcome ${DEMO_USERS[email].role.toUpperCase()}!`, 'success');
-        setTimeout(() => {
-            window.location.href = `${DEMO_USERS[email].role}.html`;
-        }, 1200);
-        return;
-    }
-    
-    // Backend mode (if available)
+    // Backend mode first; demo is only fallback when backend is unavailable.
     try {
         const response = await fetch(`${API_BASE}/auth/login`, {
             method: 'POST',
@@ -213,13 +199,25 @@ async function handleLogin() {
             setTimeout(() => {
                 window.location.href = `${data.user.role}.html`;
             }, 1200);
-        } else {
-            showMessage(data.message || 'Backend login failed → Using demo mode', 'warning');
-            handleDemoLogin(email, password);
+            return;
         }
+
+        // Only fall back to demo if the real backend rejects the login and the demo match exists.
+        if (DEMO_USERS[email] && DEMO_USERS[email].password === password) {
+            showMessage('Backend rejected the login, but demo mode is available.', 'warning');
+            handleDemoLogin(email, password);
+            return;
+        }
+
+        showMessage(data.message || 'Invalid email or password.', 'error');
     } catch (error) {
-        showMessage('Backend offline → Demo mode active', 'warning');
-        handleDemoLogin(email, password);
+        if (DEMO_USERS[email] && DEMO_USERS[email].password === password) {
+            showMessage('Backend offline → Demo mode active', 'warning');
+            handleDemoLogin(email, password);
+            return;
+        }
+
+        showMessage('Backend unavailable. Please try again later.', 'error');
     }
 }
 

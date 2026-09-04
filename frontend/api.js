@@ -119,3 +119,9 @@ async function getAiChecklistAnalysis(payload) {
         body: JSON.stringify(payload),
     });
 }
+
+async function detectFireImage(file) {
+    const formData = new FormData();
+    formData.append('image', file);
+    return apiFetch('/ai/detect-fire-image', { method: 'POST', body: formData });
+}

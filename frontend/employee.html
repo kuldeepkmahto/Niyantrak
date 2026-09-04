@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Dashboard - Niyantrak</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="employee.css">
   </head>
@@ -67,6 +68,20 @@
         <button class="report-btn warning"  onclick="openModal('unsafe')"><i class="fas fa-radiation"></i> Unsafe Condition</button>
         <button class="report-btn success"  onclick="openModal('permit')"><i class="fas fa-file-signature"></i> Work Permit</button>
         <button class="report-btn danger"   onclick="openModal('incident')"><i class="fas fa-exclamation-triangle"></i> Incident Report</button>
+    </div>
+
+    <h2 class="section-title">Fire Image Detection</h2>
+    <div class="fire-detection-panel">
+        <div>
+            <h3><i class="fas fa-camera"></i> Check a photo for fire</h3>
+            <p>Upload a clear JPG or PNG image. The AI will return a fire probability and confidence.</p>
+        </div>
+        <label class="fire-detection-upload" for="fire-image-input">
+            <i class="fas fa-cloud-arrow-up"></i>
+            <span>Choose image</span>
+            <input type="file" id="fire-image-input" accept="image/*">
+        </label>
+        <div class="fire-detection-result" id="fire-detection-result" aria-live="polite">No image analyzed yet.</div>
     </div>
 
     <h2 class="section-title">Active Alerts</h2>

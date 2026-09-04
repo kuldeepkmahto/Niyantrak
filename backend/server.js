@@ -2,14 +2,14 @@
 //  NIYANTRAK – ENTERPRISE FIRE SAFETY API
 //  server.js — Express + MongoDB entry point
 // ============================================================
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 const express    = require('express');
 const mongoose   = require('mongoose');
 const cors       = require('cors');
 const helmet     = require('helmet');
 const morgan     = require('morgan');
 const rateLimit  = require('express-rate-limit');
-const path       = require('path');
 const fs         = require('fs');
 
 const app = express();

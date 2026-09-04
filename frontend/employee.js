@@ -229,6 +229,29 @@ function applySuggestedSeverity(groupId, severity) {
     if (pill) pickSev(pill, groupId);
 }
 
+/* ── FIRE IMAGE DETECTION ── */
+async function analyzeFireImage(file) {
+    const result = document.getElementById('fire-detection-result');
+    if (!file || !result) return;
+    if (!file.type.startsWith('image/')) {
+        result.className = 'fire-detection-result fire';
+        result.textContent = 'Please choose an image file.';
+        return;
+    }
+    result.className = 'fire-detection-result';
+    result.textContent = 'Analyzing image…';
+    const { ok, data } = await detectFireImage(file);
+    if (!ok || !data?.data) {
+        result.className = 'fire-detection-result fire';
+        result.textContent = data?.message || 'Image detection is unavailable. Check that the AI service is running.';
+        return;
+    }
+    const prediction = data.data;
+    const confidence = Math.round((prediction.confidence || 0) * 100);
+    result.className = `fire-detection-result ${prediction.isFire ? 'fire' : 'safe'}`;
+    result.textContent = `${prediction.isFire ? 'Potential fire detected' : 'No fire detected'} (${confidence}% confidence)${prediction.reviewRequired ? ' — manual review recommended.' : '.'}`;
+}
+
 /* ── DASHBOARD SUMMARY (real data) ── */
 async function loadDashboardSummary() {
     const { ok, data } = await apiFetch('/incidents?limit=100');
@@ -265,6 +288,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (incDate) incDate.value = today;
     document.getElementById('logoutBtn')?.addEventListener('click', () => {
         if (confirm('Are you sure you want to logout?')) { localStorage.clear(); sessionStorage.clear(); window.location.href = 'login.html'; }
+    });
+    document.getElementById('fire-image-input')?.addEventListener('change', event => {
+        analyzeFireImage(event.target.files[0]);
     });
     loadDashboardSummary();
 });

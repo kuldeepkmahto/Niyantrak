@@ -16,7 +16,17 @@ Write-Host "Starting ML Risk Service..." -ForegroundColor Yellow
 $mlJob = Start-Job -ScriptBlock {
     Set-Location "$using:PSScriptRoot\backend\ml"
     & "$using:PSScriptRoot\.venv\Scripts\Activate.ps1"
-    uvicorn serve_model:app --host 0.0.0.0 --port 8001
+    python -m uvicorn serve_model:app --host 0.0.0.0 --port 8001
+}
+
+Start-Sleep -Seconds 2
+
+# Start fire image detection service
+Write-Host "Starting Fire Image Detection Service..." -ForegroundColor Yellow
+$fireJob = Start-Job -ScriptBlock {
+    Set-Location "$using:PSScriptRoot\backend\ml"
+    & "$using:PSScriptRoot\.venv\Scripts\Activate.ps1"
+    python -m uvicorn fire_detection.service:app --host 0.0.0.0 --port 8002
 }
 
 Start-Sleep -Seconds 2
@@ -38,9 +48,9 @@ Write-Host "Press Ctrl+C to stop all servers..." -ForegroundColor Red
 
 # Wait for jobs
 try {
-    Wait-Job -Job $backendJob, $mlJob, $frontendJob
+    Wait-Job -Job $backendJob, $mlJob, $fireJob, $frontendJob
 } finally {
     Write-Host "Stopping servers..." -ForegroundColor Yellow
-    Stop-Job -Job $backendJob, $mlJob, $frontendJob
-    Remove-Job -Job $backendJob, $mlJob, $frontendJob
+    Stop-Job -Job $backendJob, $mlJob, $fireJob, $frontendJob
+    Remove-Job -Job $backendJob, $mlJob, $fireJob, $frontendJob
 }

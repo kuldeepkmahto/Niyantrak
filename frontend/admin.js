@@ -511,6 +511,33 @@ async function runDetection() {
     const btn = document.getElementById('runDetectionBtn');
     if (!btn) return;
 
+    const imageFile = document.getElementById('fireImageInput')?.files?.[0];
+
+    if (imageFile) {
+        if (!imageFile.type.startsWith('image/')) {
+            showToast('Please choose an image file', 'error');
+            return;
+        }
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing Photo...';
+        btn.disabled = true;
+        try {
+            const { ok, data } = await detectFireImage(imageFile);
+            if (!ok || !data?.data) {
+                showToast(data?.message || 'Photo detection failed. Start the fire detection service.', 'error');
+                return;
+            }
+            displayFireImageResult(data.data);
+            showToast('Photo analyzed by the fire detection model', 'success');
+        } catch (error) {
+            console.error('Fire image detection error:', error);
+            showToast('Photo detection is unavailable. Check that the AI service is running.', 'error');
+        } finally {
+            btn.innerHTML = '<i class="fas fa-play"></i> Run Detection';
+            btn.disabled = false;
+        }
+        return;
+    }
+
     // Get sensor values
     const smokePPM = parseInt(document.getElementById('smokePPM')?.value) || 0;
     const temperature = parseInt(document.getElementById('temperature')?.value) || 0;
@@ -638,6 +665,34 @@ function displayDetectionResults(data) {
     `;
 
     // Show results
+    resultsDiv.hidden = false;
+    resultsDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayFireImageResult(data) {
+    const resultsDiv = document.getElementById('detectionResults');
+    const riskSummary = document.getElementById('riskSummary');
+    const sensorFlags = document.getElementById('sensorFlags');
+    if (!resultsDiv || !riskSummary || !sensorFlags) return;
+
+    const confidence = Math.round((data.confidence || 0) * 100);
+    const isFire = Boolean(data.isFire);
+    const color = isFire ? '#f44336' : '#4caf50';
+    riskSummary.innerHTML = `
+        <div class="risk-level" style="color: ${color}">
+            <h4>${isFire ? 'Potential Fire Detected' : 'No Fire Detected'}</h4>
+            <div class="risk-score">Model confidence: ${confidence}%</div>
+            <div class="risk-zone">Prediction: ${data.prediction || (isFire ? 'fire' : 'no_fire')}</div>
+            <div class="risk-time">Analyzed: ${new Date().toLocaleString()}</div>
+        </div>
+    `;
+    sensorFlags.innerHTML = `
+        <h4>Image Analysis:</h4>
+        <ul>
+            <li><i class="fas ${isFire ? 'fa-fire' : 'fa-check-circle'}"></i> Fire probability: ${Math.round((data.fireProbability || 0) * 100)}%</li>
+            ${data.reviewRequired ? '<li><i class="fas fa-exclamation-circle"></i> Confidence is low; manual review is recommended.</li>' : ''}
+        </ul>
+    `;
     resultsDiv.hidden = false;
     resultsDiv.scrollIntoView({ behavior: 'smooth' });
 }

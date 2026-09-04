@@ -1,5 +1,6 @@
 // routes/ai.js
 const express    = require('express');
+const multer     = require('multer');
 const Checklist  = require('../models/Checklist');
 const Alert      = require('../models/Alert');
 const User       = require('../models/User');
@@ -9,6 +10,60 @@ const { protect, authorize } = require('../middleware/auth');
 
 const router = express.Router();
 router.use(protect);
+
+const imageUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (_req, file, callback) => {
+    callback(null, file.mimetype.startsWith('image/'));
+  },
+});
+const uploadImage = (req, res, next) => imageUpload.single('image')(req, res, (err) => {
+  if (!err) return next();
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(413).json({ success: false, message: 'Image must be smaller than 10 MB.' });
+  }
+  return res.status(400).json({ success: false, message: 'Only image files can be uploaded.' });
+});
+
+// ── POST /api/ai/detect-fire-image ─────────────────────
+// Proxies an uploaded image to the standalone TensorFlow fire classifier.
+router.post('/detect-fire-image', uploadImage, async (req, res, next) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'An image file is required.' });
+    }
+
+    const serviceUrl = process.env.FIRE_DETECTION_SERVICE_URL || 'http://localhost:8002';
+    const form = new FormData();
+    form.append('image', new Blob([req.file.buffer], { type: req.file.mimetype }), req.file.originalname);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
+    const response = await fetch(`${serviceUrl}/predict`, {
+      method: 'POST',
+      body: form,
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+
+    const payload = await response.json().catch(() => ({ message: 'Invalid response from image service.' }));
+    if (!response.ok) {
+      return res.status(response.status >= 500 ? 502 : response.status).json({
+        success: false,
+        message: payload.detail || payload.message || 'Image detection failed.',
+      });
+    }
+    return res.json({ success: true, data: payload });
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      return res.status(504).json({ success: false, message: 'Image detection service timed out.' });
+    }
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(413).json({ success: false, message: 'Image must be smaller than 10 MB.' });
+    }
+    next(err);
+  }
+});
 
 // ── POST /api/ai/triage ───────────────────────────────
 // NLP auto-triage: given a report type + freeform description, suggest a
