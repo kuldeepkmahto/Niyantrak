@@ -38,11 +38,15 @@ python -m http.server 3000
 
 ## Access the Application
 - **Frontend**: http://localhost:3000
+- **CCTV Control Room (Add-On)**: http://localhost:3000/cctv.html
 - **Backend API**: http://localhost:5000
-- **ML Service**: http://localhost:8001
+- **ML Risk Service**: http://localhost:8001
+- **Fire Image Service**: http://localhost:8002
+- **CCTV Vision Engine (Add-On)**: http://localhost:8003
 - **Health Check**: http://localhost:5000/api/health
 
 ## Core Features
+- **Live CCTV & IP Camera Fire Detection (Add-On)**: Real-time OpenCV flame contour detection, ML verification, glowing bounding boxes, audio sirens, automated NiyanTrak emergency alerts, and emergency drill simulation.
 - AI-driven early detection using vision and sensor fusion models for smoke, fire, and predictive hazard analysis
 - GPS-based precise alerts with location coordinates and role-based escalation workflows for rapid emergency response
 - Digital compliance tracking aligned with standards like NFPA, including automated logging, reporting, and status summaries

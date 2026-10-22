@@ -356,6 +356,7 @@ document.getElementById('userSearch')?.addEventListener('input', e => renderUser
 document.getElementById('roleFilter')?.addEventListener('change', () => renderUsersTable(document.getElementById('userSearch')?.value.toLowerCase() || ''));
 document.getElementById('statusFilter')?.addEventListener('change', () => renderUsersTable(document.getElementById('userSearch')?.value.toLowerCase() || ''));
 
+
 // ── Alerts Admin Grid (real data) ─────────
 const SEV_COLORS = { critical: '#f44336', high: '#ff5722', medium: '#ff9800', low: '#4caf50' };
 
@@ -560,23 +561,30 @@ async function runDetection() {
 
         // Check if it's a demo token
         if (token.startsWith('demo-token')) {
-            // Use demo mode
+            let score = 0;
+            const flags = [];
+            if (smokePPM >= 35) { score += 30; flags.push('Smoke levels above safe threshold.'); }
+            if (temperature >= 55) { score += 30; flags.push('High temperature detected near hazard threshold.'); }
+            if (carbonMonoxide >= 50) { score += 20; flags.push('Elevated carbon monoxide concentration detected.'); }
+            if (soundLevel >= 85) { score += 10; flags.push('Unusual acoustic signature detected in the area.'); }
+            if (cameraAlert) { score += 20; flags.push('Vision model flagged a potential fire or smoke event.'); }
+            score = Math.min(100, score);
+            const riskLevel = score >= 70 ? 'critical' : score >= 45 ? 'high' : score >= 25 ? 'warning' : 'safe';
+            const riskLabel = riskLevel === 'critical' ? '🔴 Critical Hazard' : riskLevel === 'high' ? '🟠 High Hazard' : riskLevel === 'warning' ? '🟡 Warning Hazard' : '🟢 Safe Nominal';
+            if (flags.length === 0) flags.push('All environmental sensors within nominal operating limits.');
+
             const demoResult = {
-                score: Math.floor(Math.random() * 40) + 60, // 60-100
-                riskLevel: Math.random() > 0.5 ? 'warning' : 'critical',
-                riskLabel: Math.random() > 0.5 ? '🟡 Warning Hazard' : '🔴 Critical Hazard',
-                flags: [
-                    'Demo: Simulated sensor readings detected.',
-                    'Demo: Risk assessment completed.',
-                    'Demo: Analysis based on input parameters.'
-                ],
+                score,
+                riskLevel,
+                riskLabel,
+                flags,
                 sensorReadings: { smokePPM, temperature, carbonMonoxide, soundLevel, cameraAlert },
                 zone,
                 location: '28.6139,77.2090',
                 analyzedAt: new Date().toISOString()
             };
             displayDetectionResults(demoResult);
-            showToast('Demo detection completed', 'success');
+            showToast('Sensor fusion assessment completed', 'success');
             return;
         }
 

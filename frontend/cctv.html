@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCTV Surveillance & Fire Detection — Niyantrak</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="cctv.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body class="cctv-body">
+
+    <!-- ═══ TOP COMMAND BAR ═══ -->
+    <header class="cctv-header">
+        <div class="cctv-brand">
+            <i class="fas fa-fire-alt logo-icon"></i>
+            <div>
+                <h1>NIYANTRAK CCTV COMMAND</h1>
+            </div>
+            <span class="badge-tag">AI Vision Add-On</span>
+        </div>
+
+        <div class="cctv-header-actions">
+            <!-- Safety Drill Simulation Trigger -->
+            <button class="btn-cctv btn-drill" id="drillBtn" onclick="toggleFireSimulation('cam-01')" title="Demonstrate fire detection, bounding boxes, and alert escalation">
+                <i class="fas fa-fire-extinguisher"></i>
+                <span>Run Fire Drill Simulation</span>
+            </button>
+
+            <!-- Audio Siren Toggle -->
+            <button class="btn-cctv" id="toggleSirenBtn" title="Toggle audio alert siren">
+                <i class="fas fa-volume-up"></i>
+                <span>Siren Active</span>
+            </button>
+
+            <!-- Connect User Webcam -->
+            <button class="btn-cctv" id="connectWebcamBtn" style="background:#0284c7;border-color:#38bdf8;color:#fff;" title="Request browser camera access for live fire detection">
+                <i class="fas fa-camera"></i>
+                <span>Use My Webcam</span>
+            </button>
+
+            <!-- Add Camera Feed -->
+            <button class="btn-cctv btn-primary" id="openAddCameraBtn">
+                <i class="fas fa-plus"></i>
+                <span>Add RTSP / IP Cam</span>
+            </button>
+
+            <!-- Navigation back to Dashboards -->
+            <a href="admin.html" class="btn-cctv" title="Admin Dashboard">
+                <i class="fas fa-user-shield"></i>
+                <span>Admin</span>
+            </a>
+            <a href="firemen.html" class="btn-cctv" title="Firemen Dashboard">
+                <i class="fas fa-fire-truck"></i>
+                <span>Fire Unit</span>
+            </a>
+            <a href="employee.html" class="btn-cctv" title="Employee Portal">
+                <i class="fas fa-hard-hat"></i>
+                <span>Employee</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- ═══ TELEMETRY SUBBAR ═══ -->
+    <div class="cctv-subbar">
+        <div class="telemetry-group">
+            <div class="telemetry-item">
+                <span class="telemetry-dot green" id="engineDot"></span>
+                <span>Vision Engine: <strong id="engineStatusText">Online (Port 8003)</strong></span>
+            </div>
+            <div class="telemetry-item">
+                <i class="fas fa-video" style="color:var(--cctv-cyan)"></i>
+                <span>Monitored Feeds: <strong id="activeCamCount">4</strong></span>
+            </div>
+            <div class="telemetry-item">
+                <i class="fas fa-microchip" style="color:#a855f7"></i>
+                <span>Model: <strong>OpenCV Contours + Scikit-Learn Fire Classifier</strong></span>
+            </div>
+        </div>
+
+        <div class="telemetry-group">
+            <div class="telemetry-item">
+                <i class="far fa-clock"></i>
+                <span id="liveClock">Loading UTC...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ EMERGENCY FIRE ALERT BANNER ═══ -->
+    <div class="cctv-alert-banner" id="globalAlertBanner">
+        <div class="alert-banner-left">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span id="alertBannerText">CRITICAL HAZARD: FLAME CONFIRMED BY VISION ENGINE — EVACUATION PROTOCOL ACTIVE</span>
+        </div>
+        <div>
+            <a href="admin.html#section-alerts" class="btn-cctv btn-danger" style="text-decoration:none;">
+                <i class="fas fa-bell"></i> View Emergency Alerts
+            </a>
+        </div>
+    </div>
+
+    <!-- ═══ MAIN CCTV SURVEILLANCE AREA ═══ -->
+    <main class="cctv-main">
+
+        <!-- Controls Bar -->
+        <div class="cctv-controls-bar">
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+                <span style="font-family:var(--font-heading);font-weight:700;font-size:1.1rem;letter-spacing:0.04em;">
+                    <i class="fas fa-th-large" style="color:var(--cctv-accent);margin-right:0.4rem;"></i> MULTI-CAMERA MATRIX
+                </span>
+                <span style="color:var(--cctv-text-muted);font-size:0.85rem;">(Live RTSP / MJPEG Video Streams)</span>
+            </div>
+
+            <div class="grid-buttons">
+                <button class="grid-btn" data-grid="grid-1x1" title="Single Focus View (1x1)">
+                    <i class="fas fa-square"></i>
+                </button>
+                <button class="grid-btn active" data-grid="grid-2x2" title="Quad Grid View (2x2)">
+                    <i class="fas fa-th-large"></i>
+                </button>
+                <button class="grid-btn" data-grid="grid-3col" title="Wide View (3 Columns)">
+                    <i class="fas fa-columns"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Video Feeds Grid -->
+        <div class="cctv-grid grid-2x2" id="cctvGrid">
+            <!-- Dynamic camera cards injected by cctv.js -->
+        </div>
+
+        <!-- Incident Snapshots Section -->
+        <section class="snapshot-section">
+            <h3>
+                <i class="fas fa-camera-retro" style="color:var(--cctv-cyan)"></i>
+                <span>Live Evidence Snapshots</span>
+                <small style="font-size:0.75rem;color:var(--cctv-text-muted);font-family:var(--font-body);font-weight:normal;margin-left:auto;">
+                    Auto-captured when flames are confirmed
+                </small>
+            </h3>
+            <div class="snapshot-grid" id="snapshotGrid">
+                <!-- Dynamically populated snapshot thumbnails -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ═══ MODAL: ADD / CONFIGURE RTSP CAMERA ═══ -->
+    <div class="cctv-modal-overlay" id="addCameraModal">
+        <div class="cctv-modal">
+            <div class="cctv-modal-header">
+                <h3><i class="fas fa-video-plus"></i> Add CCTV / RTSP Stream</h3>
+                <button class="modal-close-btn" id="closeModalBtn">&times;</button>
+            </div>
+            <form id="addCameraForm">
+                <div class="cctv-modal-body">
+                    <div class="form-group">
+                        <label for="camId">Camera ID</label>
+                        <input type="text" id="camId" placeholder="e.g. cam-05" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="camName">Camera Name</label>
+                        <input type="text" id="camName" placeholder="e.g. Camera 05 - Boiler Room East" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="camZone">Assigned Zone</label>
+                        <input type="text" id="camZone" placeholder="e.g. Warehouse A - Zone 3" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="camSource">Stream Source (RTSP / HTTP / Device)</label>
+                        <input type="text" id="camSource" placeholder="rtsp://192.168.1.100:554/live or 0 or demo" required>
+                        <small>Enter an RTSP/HTTP URL, a webcam device index (e.g. '0'), or 'demo' for synthetic factory feed.</small>
+                    </div>
+                </div>
+                <div class="cctv-modal-footer">
+                    <button type="button" class="btn-cctv" onclick="document.getElementById('addCameraModal').classList.remove('active')">Cancel</button>
+                    <button type="submit" class="btn-cctv btn-primary"><i class="fas fa-plus"></i> Connect Stream</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <video id="webcamVideo" autoplay playsinline muted style="display:none;"></video>
+    <script src="cctv.js"></script>
+</body>
+</html>

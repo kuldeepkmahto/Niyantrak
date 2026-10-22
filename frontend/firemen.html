@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Firemen Dashboard - Niyantrak</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="firemen.css">
 </head>
 <body>
@@ -15,8 +17,10 @@
     <!-- ── SIDEBAR ── -->
     <nav class="sidebar">
         <div class="sidebar-logo">
-            <h2><i class="fas fa-fire"></i> Niyantrak</h2>
-            <p>Fire Response Unit</p>
+            <a href="index.html" style="text-decoration:none;display:block;">
+                <h2><i class="fas fa-fire-alt"></i> Niyantrak</h2>
+                <p>Fire Response Unit</p>
+            </a>
         </div>
 
         <ul class="nav-menu">
@@ -32,6 +36,9 @@
             <li><button class="nav-item" data-section="photos">
                 <i class="fas fa-camera"></i><span>Photo Upload</span>
             </button></li>
+            <li><a href="cctv.html" class="nav-item" style="text-decoration:none;" title="Live CCTV Feeds">
+                <i class="fas fa-video" style="color:#ff5722"></i><span>Live CCTV Feeds</span>
+            </a></li>
         </ul>
 
         <div class="sidebar-footer">
@@ -108,6 +115,10 @@
                         <i class="fas fa-clipboard-check"></i>
                         Run Checklist
                     </button>
+                    <a href="cctv.html" class="action-card" style="text-decoration:none;border-color:rgba(255,87,34,0.4);" title="Watch live CCTV feeds">
+                        <i class="fas fa-video" style="color:#ff5722"></i>
+                        Live CCTV Feeds
+                    </a>
                 </div>
 
                 <h2 class="fm-section-title">Recent Incidents</h2>

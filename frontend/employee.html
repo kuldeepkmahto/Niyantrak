@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Dashboard - Niyantrak</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="employee.css">
   </head>
@@ -15,8 +17,10 @@
 <!-- ══ SIDEBAR ══ -->
 <nav class="sidebar">
     <div class="sidebar-logo">
-        <h2><i class="fas fa-fire"></i> Niyantrak</h2>
-        <p>Employee Portal</p>
+        <a href="index.html" style="text-decoration:none;display:block;">
+            <h2><i class="fas fa-fire-alt"></i> Niyantrak</h2>
+            <p>Employee Portal</p>
+        </a>
     </div>
     <ul class="nav-menu">
         <li><button class="nav-item active" data-section="dashboard"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></button></li>
@@ -24,11 +28,15 @@
         <li><button class="nav-item" onclick="openModal('unsafe')"><i class="fas fa-radiation"></i><span>Unsafe Condition</span></button></li>
         <li><button class="nav-item" onclick="openModal('permit')"><i class="fas fa-file-signature"></i><span>Work Permit</span></button></li>
         <li><button class="nav-item" onclick="openModal('incident')"><i class="fas fa-exclamation-triangle"></i><span>Incidents</span></button></li>
+        <li><a href="cctv.html" class="nav-item" style="text-decoration:none;" title="Live CCTV Surveillance"><i class="fas fa-video" style="color:var(--accent);"></i><span>Live CCTV Feeds</span></a></li>
     </ul>
     <div class="sidebar-footer">
         <button class="nav-item logout" id="logoutBtn"><i class="fas fa-sign-out-alt"></i><span>Logout</span></button>
     </div>
 </nav>
+
+<!-- ══ MAIN AREA ══ -->
+<div class="main-area">
 
 <!-- ══ NAVBAR ══ -->
 <header class="navbar">
@@ -76,11 +84,17 @@
             <h3><i class="fas fa-camera"></i> Check a photo for fire</h3>
             <p>Upload a clear JPG or PNG image. The AI will return a fire probability and confidence.</p>
         </div>
-        <label class="fire-detection-upload" for="fire-image-input">
-            <i class="fas fa-cloud-arrow-up"></i>
-            <span>Choose image</span>
-            <input type="file" id="fire-image-input" accept="image/*">
-        </label>
+        <div style="display:flex;gap:0.75rem;align-items:center;">
+            <label class="fire-detection-upload" for="fire-image-input">
+                <i class="fas fa-cloud-arrow-up"></i>
+                <span>Choose image</span>
+                <input type="file" id="fire-image-input" accept="image/*">
+            </label>
+            <a href="cctv.html" class="fire-detection-upload" style="text-decoration:none;background:#1e293b;border-color:#475569;" title="View Live Facility CCTV Feeds">
+                <i class="fas fa-video"></i>
+                <span>Live CCTV</span>
+            </a>
+        </div>
         <div class="fire-detection-result" id="fire-detection-result" aria-live="polite">No image analyzed yet.</div>
     </div>
 
@@ -98,6 +112,7 @@
         </div>
     </div>
 </main>
+</div>
 </div>
 
 <!-- ══════════ MODAL 1: NEAR MISS (3-step) ══════════ -->

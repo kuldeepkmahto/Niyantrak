@@ -3,12 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Niyantrak</title>
+    <title>Niyantrak — Admin Command Center</title>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="admin.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body>
@@ -17,82 +20,102 @@
     <!-- ── SIDEBAR ── -->
     <aside class="sidebar">
         <div class="sidebar-header">
-            <div class="logo">
-                <i class="fas fa-fire"></i>
-                <span class="logo-text">Niyantrak</span>
-            </div>
-            <p class="logo-sub">Admin Panel</p>
+            <a href="index.html" class="logo">
+                <i class="fas fa-fire-alt"></i>
+                <div class="logo-text-group">
+                    <span class="logo-text">NIYANTRAK</span>
+                    <span class="logo-sub">COMMAND &amp; CONTROL</span>
+                </div>
+            </a>
         </div>
 
         <nav class="nav-menu">
             <button class="nav-item active" data-section="overview">
-                <i class="fas fa-home"></i><span>Overview</span>
+                <i class="fas fa-chart-pie"></i><span>Command Hub</span>
             </button>
             <button class="nav-item" data-section="analytics">
-                <i class="fas fa-chart-line"></i><span>Analytics</span>
+                <i class="fas fa-chart-line"></i><span>Telemetry &amp; Trends</span>
             </button>
             <button class="nav-item" data-section="users">
-                <i class="fas fa-users"></i><span>Users</span>
+                <i class="fas fa-users-cog"></i><span>Personnel Roster</span>
             </button>
             <button class="nav-item" data-section="alerts">
-                <i class="fas fa-bell"></i><span>Alerts</span>
+                <i class="fas fa-bell"></i><span>Active Incidents</span>
             </button>
             <button class="nav-item" data-section="detection">
-                <i class="fas fa-brain"></i><span>AI Detection</span>
+                <i class="fas fa-microchip"></i><span>AI Sensor Fusion</span>
             </button>
             <button class="nav-item" data-section="reports">
-                <i class="fas fa-file-alt"></i><span>Reports</span>
+                <i class="fas fa-file-invoice"></i><span>Compliance Logs</span>
             </button>
+            <a href="cctv.html" class="nav-item nav-cctv" title="Live Video Matrix & Flame Vision">
+                <i class="fas fa-video" style="color:var(--accent);"></i>
+                <span>live feed</span>
+                <span class="live-badge-dot" style="margin-left:auto;"></span>
+            </a>
         </nav>
 
         <div class="sidebar-footer">
+            <div class="sidebar-heartbeat">
+                <span class="pulse-indicator online"></span>
+                <div class="heartbeat-text">
+                    <span class="heartbeat-label">SYSTEM HEALTH</span>
+                    <span class="heartbeat-val">OPTIMAL (99.98%)</span>
+                </div>
+            </div>
             <button class="nav-item logout" id="logoutBtn">
-                <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+                <i class="fas fa-sign-out-alt"></i><span>End Session</span>
             </button>
         </div>
     </aside>
 
-    <!-- ── MAIN ── -->
+    <!-- ── MAIN DASHBOARD ── -->
     <main class="dashboard-main">
 
         <!-- TOPBAR -->
         <div class="topbar">
             <div class="topbar-left">
-                <button id="toggleSidebar" class="toggle-btn" type="button" aria-label="Toggle sidebar" title="Toggle sidebar"><i class="fas fa-bars"></i></button>
-                <h1 id="pageTitle">🔥 Admin Command Center</h1>
+                <button id="toggleSidebar" class="toggle-btn" type="button" aria-label="Toggle sidebar" title="Toggle sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1 id="pageTitle">Admin Command Center</h1>
+                <div class="topbar-telemetry">
+                    <span class="badge-tag"><i class="fas fa-shield-alt" style="color:var(--accent);"></i> NFPA 72 COMPLIANT</span>
+                    <span class="badge-tag"><i class="fas fa-wifi" style="color:#10b981;"></i> 12 IOT SENSORS ACTIVE</span>
+                </div>
             </div>
             <div class="topbar-actions">
                 <div class="search">
                     <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Search..." id="globalSearch" aria-label="Search dashboard" title="Search dashboard">
+                    <input type="text" placeholder="Search facilities, nodes..." id="globalSearch" aria-label="Search dashboard">
                 </div>
-                <div class="notif-btn">
+                <div class="notif-btn" title="System Notifications">
                     <i class="fas fa-bell"></i>
-                    <span class="alert-dot">5</span>
+                    <span class="alert-dot" id="topbarAlertDot">5</span>
                 </div>
-                <div class="profile">
-                    <img src="https://i.pravatar.cc/40?img=3" alt="Admin" />
+                <div class="profile" title="Administrator Profile">
+                    <img src="https://i.pravatar.cc/60?img=3" alt="Admin Avatar" />
                     <span>Admin</span>
                 </div>
             </div>
         </div>
 
-        <!-- ═══ OVERVIEW ═══ -->
+        <!-- ═══ SECTION: OVERVIEW ═══ -->
         <div id="section-overview" class="admin-section active">
 
-            <!-- CRITICAL ALERT -->
+            <!-- CRITICAL INCIDENT ALERT PANEL -->
             <div class="alert-panel critical" id="alertPanel">
                 <div class="alert-left">
                     <div class="alert-fire-icon"><i class="fas fa-fire"></i></div>
                     <div>
-                        <h3>Critical Fire Detected</h3>
-                        <p>Warehouse A • Zone 3 • Temp: <strong>78°C</strong> • HIGH Smoke</p>
+                        <h3>Critical Thermal Hazard Detected</h3>
+                        <p>Warehouse A &bull; Zone 3 &bull; Core Temp: <strong>78°C</strong> &bull; Atmosphere: <strong>HIGH Smoke (65 PPM)</strong></p>
                     </div>
                 </div>
                 <div class="alert-right">
-                    <span class="alert-time-pill">2 min ago</span>
-                    <button class="btn-danger" id="evacuateBtn">
-                        <i class="fas fa-running"></i> Initiate Evacuation
+                    <span class="alert-time-pill">ACTIVE &bull; 2 min ago</span>
+                    <button class="btn btn-danger" id="evacuateBtn">
+                        <i class="fas fa-radiation"></i> Initiate Evacuation
                     </button>
                     <button class="btn-dismiss" type="button" aria-label="Dismiss alert" title="Dismiss alert" onclick="this.closest('.alert-panel').style.display='none'">
                         <i class="fas fa-times"></i>
@@ -100,38 +123,38 @@
                 </div>
             </div>
 
-            <!-- KPI GRID -->
+            <!-- KPI TELEMETRY METRICS -->
             <div class="kpi-grid">
                 <div class="kpi-card">
-                    <div class="kpi-icon orange"><i class="fas fa-users"></i></div>
+                    <div class="kpi-icon orange"><i class="fas fa-users-shield"></i></div>
                     <div class="kpi-body">
                         <h2>1,247</h2>
-                        <p>Total Users</p>
-                        <span class="kpi-trend up"><i class="fas fa-arrow-up"></i> 12%</span>
+                        <p>Monitored Personnel</p>
+                        <span class="kpi-trend up"><i class="fas fa-arrow-up"></i> +12% this month</span>
                     </div>
                 </div>
                 <div class="kpi-card">
-                    <div class="kpi-icon red"><i class="fas fa-bell"></i></div>
+                    <div class="kpi-icon red"><i class="fas fa-fire-extinguisher"></i></div>
                     <div class="kpi-body">
                         <h2 id="activeAlerts">5</h2>
-                        <p>Active Alerts</p>
-                        <span class="kpi-trend down"><i class="fas fa-arrow-down"></i> 3 resolved</span>
+                        <p>Active Incidents</p>
+                        <span class="kpi-trend down"><i class="fas fa-check"></i> 3 resolved today</span>
                     </div>
                 </div>
                 <div class="kpi-card">
-                    <div class="kpi-icon yellow"><i class="fas fa-exclamation-triangle"></i></div>
+                    <div class="kpi-icon yellow"><i class="fas fa-triangle-exclamation"></i></div>
                     <div class="kpi-body">
                         <h2>23</h2>
-                        <p>Incidents This Month</p>
-                        <span class="kpi-trend up"><i class="fas fa-arrow-up"></i> +2%</span>
+                        <p>Total Monthly Events</p>
+                        <span class="kpi-trend up"><i class="fas fa-arrow-up"></i> Low variance</span>
                     </div>
                 </div>
                 <div class="kpi-card">
-                    <div class="kpi-icon green"><i class="fas fa-shield-alt"></i></div>
+                    <div class="kpi-icon green"><i class="fas fa-certificate"></i></div>
                     <div class="kpi-body">
                         <h2>94%</h2>
-                        <p>Compliance Rate</p>
-                        <span class="kpi-trend up"><i class="fas fa-arrow-up"></i> +1.2%</span>
+                        <p>OSHA / NFPA Compliance</p>
+                        <span class="kpi-trend up"><i class="fas fa-arrow-up"></i> +1.2% audit grade</span>
                     </div>
                 </div>
             </div>
@@ -139,24 +162,24 @@
             <!-- AI MODEL PERFORMANCE CARD -->
             <div class="ai-model-card" id="aiModelCard">
                 <div class="ai-model-header">
-                    <h3><i class="fas fa-brain"></i> Checklist Risk Model</h3>
+                    <h3><i class="fas fa-brain"></i> Machine Learning Hazard Fusion Model</h3>
                     <span class="ai-model-status" id="aiModelStatus">
-                        <span class="status-dot"></span> Checking…
+                        <span class="status-dot"></span> Checking telemetry…
                     </span>
                 </div>
                 <div class="ai-model-body" id="aiModelBody">
-                    <p class="ai-model-loading">Loading model metrics…</p>
+                    <p class="ai-model-loading">Synchronizing model weights &amp; feature importance…</p>
                 </div>
             </div>
 
-            <!-- MINI CHARTS ROW -->
+            <!-- CHARTS ROW -->
             <div class="charts-row">
                 <div class="chart-card wide">
                     <div class="chart-header">
-                        <h3><i class="fas fa-chart-line"></i> Fire Alerts — Last 6 Months</h3>
+                        <h3><i class="fas fa-chart-line"></i> Thermal &amp; Fire Incident Trend (6-Month Horizon)</h3>
                         <div class="chart-legend">
-                            <span class="leg-dot orange"></span> Alerts
-                            <span class="leg-dot green"></span> Resolved
+                            <span class="leg-dot orange"></span> Detected Alerts
+                            <span class="leg-dot green"></span> Successfully Cleared
                         </div>
                     </div>
                     <div class="chart-wrap"><canvas id="alertTrendChart"></canvas></div>
@@ -164,21 +187,21 @@
 
                 <div class="chart-card narrow">
                     <div class="chart-header">
-                        <h3><i class="fas fa-chart-pie"></i> Compliance</h3>
+                        <h3><i class="fas fa-chart-pie"></i> Safety Compliance Index</h3>
                     </div>
                     <div class="chart-wrap donut-wrap"><canvas id="complianceChart"></canvas></div>
                     <div class="donut-legend">
-                        <span><span class="leg-dot green"></span> Compliant 94%</span>
-                        <span><span class="leg-dot red"></span> Non-compliant 6%</span>
+                        <span><span class="leg-dot green"></span> Compliant (94%)</span>
+                        <span><span class="leg-dot red"></span> Action Required (6%)</span>
                     </div>
                 </div>
             </div>
 
-            <!-- ZONE BAR CHART -->
+            <!-- ZONE INCIDENT DISTRIBUTION -->
             <div class="chart-card">
                 <div class="chart-header">
-                    <h3><i class="fas fa-map-marker-alt"></i> Incidents by Zone</h3>
-                    <select class="chart-filter" id="zoneFilter" aria-label="Filter incidents by range" title="Filter incidents by range">
+                    <h3><i class="fas fa-map-marked-alt"></i> Incident Frequency by Facility Zone</h3>
+                    <select class="chart-filter" id="zoneFilter" aria-label="Filter incidents by range">
                         <option>This Month</option>
                         <option>Last 3 Months</option>
                         <option>This Year</option>
@@ -189,35 +212,37 @@
 
         </div>
 
-        <!-- ═══ ANALYTICS ═══ -->
+        <!-- ═══ SECTION: ANALYTICS ═══ -->
         <div id="section-analytics" class="admin-section">
-            <h2 class="admin-section-title"><i class="fas fa-chart-line"></i> Analytics</h2>
+            <h2 class="admin-section-title"><i class="fas fa-chart-line"></i> Advanced Analytics &amp; Incident Metrics</h2>
 
             <div class="charts-row">
                 <div class="chart-card wide">
                     <div class="chart-header">
-                        <h3>Response Time — Avg Minutes</h3>
+                        <h3>Mean Response Dispatch Time (Minutes)</h3>
                     </div>
                     <div class="chart-wrap"><canvas id="responseChart"></canvas></div>
                 </div>
                 <div class="chart-card narrow">
-                    <div class="chart-header"><h3>Alert Types</h3></div>
+                    <div class="chart-header">
+                        <h3>Incident Classification</h3>
+                    </div>
                     <div class="chart-wrap donut-wrap"><canvas id="alertTypeChart"></canvas></div>
                 </div>
             </div>
 
             <div class="stats-table-card">
-                <h3 class="chart-header-title">Monthly Summary</h3>
+                <h3 class="chart-header-title">Historical Performance Matrix</h3>
                 <table class="data-table">
                     <thead>
-                        <tr><th>Month</th><th>Alerts</th><th>Resolved</th><th>Avg Response</th><th>Compliance</th></tr>
+                        <tr><th>Reporting Window</th><th>Total Alerts</th><th>Resolved</th><th>Mean Response</th><th>Compliance Ratio</th></tr>
                     </thead>
                     <tbody id="analyticsTableBody"></tbody>
                 </table>
             </div>
         </div>
 
-        <!-- ═══ USERS ═══ -->
+        <!-- ═══ SECTION: USERS ═══ -->
         <div id="section-users" class="admin-section">
             <div class="section-toolbar">
                 <h2 class="admin-section-title"><i class="fas fa-users"></i> User Management</h2>
@@ -225,18 +250,18 @@
             </div>
 
             <div class="filter-bar">
-                <input type="text" id="userSearch" placeholder="Search users..." class="filter-input" aria-label="Search users" title="Search users">
-                <select id="roleFilter" class="filter-select" aria-label="Filter by role" title="Filter by role">
-                    <option value="">All Roles</option>
-                    <option value="admin">Admin</option>
-                    <option value="employee">Employee</option>
-                    <option value="firemen">Firemen</option>
+                <input type="text" id="userSearch" placeholder="Search by name, email, or badge..." class="filter-input" aria-label="Search users">
+                <select id="roleFilter" class="filter-select" aria-label="Filter by role">
+                    <option value="">All Operational Roles</option>
+                    <option value="admin">Administrator / Incident Command</option>
+                    <option value="firemen">Firemen / First Responder</option>
+                    <option value="employee">Industrial Employee</option>
                     <option value="safetyofficer">Safety Officer</option>
                 </select>
-                <select id="statusFilter" class="filter-select" aria-label="Filter by status" title="Filter by status">
-                    <option value="">All Status</option>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
+                <select id="statusFilter" class="filter-select" aria-label="Filter by status">
+                    <option value="">All Clearance Status</option>
+                    <option value="active">Active &bull; Cleared</option>
+                    <option value="inactive">Inactive &bull; Deactivated</option>
                 </select>
             </div>
 
@@ -244,10 +269,10 @@
                 <table class="data-table" id="usersTable">
                     <thead>
                         <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Zone</th>
+                            <th>Personnel</th>
+                            <th>Corporate Email</th>
+                            <th>Role &amp; Privilege</th>
+                            <th>Assigned Zone</th>
                             <th>Status</th>
                             <th>Last Active</th>
                             <th>Actions</th>
@@ -258,50 +283,52 @@
             </div>
         </div>
 
-        <!-- ═══ ALERTS ═══ -->
+        <!-- ═══ SECTION: ALERTS ═══ -->
         <div id="section-alerts" class="admin-section">
-            <h2 class="admin-section-title"><i class="fas fa-bell"></i> Alert Management</h2>
+            <h2 class="admin-section-title"><i class="fas fa-bell"></i> Active Incidents &amp; Hazard Dispatch</h2>
 
             <div class="alerts-admin-grid" id="alertsAdminGrid"></div>
         </div>
 
-        <!-- ═══ AI DETECTION ═══ -->
+        <!-- ═══ SECTION: AI DETECTION ═══ -->
         <div id="section-detection" class="admin-section">
             <div class="section-toolbar">
-                <h2 class="admin-section-title"><i class="fas fa-brain"></i> AI Sensor Fusion</h2>
-                <button class="btn-add" id="runDetectionBtn">
-                    <i class="fas fa-play"></i> Run Detection
+                <h2 class="admin-section-title"><i class="fas fa-microchip"></i> Multi-Sensor AI Fusion Suite</h2>
+                <button class="btn btn-primary" id="runDetectionBtn" type="button">
+                    <i class="fas fa-play"></i> Run Live Fusion Analysis
                 </button>
             </div>
 
-            <!-- Sensor Input Panel -->
+            <!-- Sensor Telemetry Input Panel -->
             <div class="detection-input-panel">
-                <h3>Sensor Readings</h3>
+                <h3>Telemetry Calibration &amp; Live Inputs</h3>
+                
                 <div class="image-detection-input">
-                    <label for="fireImageInput">Fire image</label>
+                    <label for="fireImageInput"><i class="fas fa-camera"></i> Computer Vision Inspection (Optional Photo)</label>
                     <input type="file" id="fireImageInput" accept="image/*" aria-describedby="fireImageHelp">
-                    <small id="fireImageHelp">Upload a client photo to check it against the trained fire dataset.</small>
+                    <small id="fireImageHelp">Upload client or drone imagery to test against convolutional feature weights.</small>
                 </div>
+
                 <div class="sensor-grid">
                     <div class="sensor-input">
-                        <label>Smoke (PPM)</label>
-                        <input type="number" id="smokePPM" value="40" min="0" max="100" title="Smoke level in PPM" aria-label="Smoke level in PPM">
+                        <label>Smoke Obscuration (PPM)</label>
+                        <input type="number" id="smokePPM" value="40" min="0" max="100" title="Smoke level">
                     </div>
                     <div class="sensor-input">
-                        <label>Temperature (°C)</label>
-                        <input type="number" id="temperature" value="58" min="0" max="100" title="Temperature in degrees Celsius" aria-label="Temperature in degrees Celsius">
+                        <label>Ambient Temperature (°C)</label>
+                        <input type="number" id="temperature" value="58" min="0" max="100" title="Temperature">
                     </div>
                     <div class="sensor-input">
-                        <label>CO (PPM)</label>
-                        <input type="number" id="carbonMonoxide" value="65" min="0" max="200" title="Carbon monoxide in PPM" aria-label="Carbon monoxide in PPM">
+                        <label>Carbon Monoxide CO (PPM)</label>
+                        <input type="number" id="carbonMonoxide" value="65" min="0" max="200" title="Carbon monoxide">
                     </div>
                     <div class="sensor-input">
-                        <label>Sound Level (dB)</label>
-                        <input type="number" id="soundLevel" value="88" min="0" max="120" title="Sound level in decibels" aria-label="Sound level in decibels">
+                        <label>Acoustic Pressure (dB)</label>
+                        <input type="number" id="soundLevel" value="88" min="0" max="120" title="Sound level">
                     </div>
                     <div class="sensor-input">
-                        <label>Zone</label>
-                        <select id="detectionZone" title="Detection zone" aria-label="Detection zone">
+                        <label>Industrial Facility Zone</label>
+                        <select id="detectionZone" title="Zone">
                             <option value="Warehouse A - Zone 1">Warehouse A - Zone 1</option>
                             <option value="Warehouse A - Zone 2">Warehouse A - Zone 2</option>
                             <option value="Warehouse A - Zone 3" selected>Warehouse A - Zone 3</option>
@@ -310,38 +337,41 @@
                             <option value="Loading Dock">Loading Dock</option>
                         </select>
                     </div>
-                    <div class="sensor-input">
-                        <label>Camera Alert</label>
-                        <input type="checkbox" id="cameraAlert" checked title="Camera alert enabled" aria-label="Camera alert enabled">
+                    <div class="sensor-input" style="justify-content:center;">
+                        <label>Optical Flame Trigger</label>
+                        <div style="display:flex;align-items:center;gap:0.5rem;margin-top:0.3rem;">
+                            <input type="checkbox" id="cameraAlert" checked style="width:18px;height:18px;accent-color:var(--accent);">
+                            <span style="font-size:0.85rem;color:var(--text-muted);">Vision Flagged</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Detection Results -->
+            <!-- Detection Analysis Results -->
             <div class="detection-results" id="detectionResults" hidden>
-                <h3>Analysis Results</h3>
+                <h3>Fusion Classification Output</h3>
                 <div class="risk-summary" id="riskSummary"></div>
                 <div class="sensor-flags" id="sensorFlags"></div>
                 <div class="detection-actions">
-                    <button class="btn-danger" id="createAlertBtn">
-                        <i class="fas fa-exclamation-triangle"></i> Create Alert
+                    <button class="btn btn-danger" id="createAlertBtn">
+                        <i class="fas fa-exclamation-triangle"></i> Broadcast Alert
                     </button>
-                    <button class="btn-warning" id="logComplianceBtn">
-                        <i class="fas fa-clipboard-check"></i> Log Compliance
+                    <button class="btn btn-warning" id="logComplianceBtn">
+                        <i class="fas fa-clipboard-check"></i> Append to Compliance Log
                     </button>
                 </div>
             </div>
 
-            <!-- Recent Detections -->
+            <!-- Recent AI Detections -->
             <div class="stats-table-card">
-                <h3 class="chart-header-title">Recent AI Detections</h3>
+                <h3 class="chart-header-title">Recent Automated Detections</h3>
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Zone</th>
-                            <th>Risk Level</th>
-                            <th>Score</th>
-                            <th>Flags</th>
+                            <th>Monitored Zone</th>
+                            <th>Assessed Risk</th>
+                            <th>Hazard Score</th>
+                            <th>Contributing Telemetry</th>
                             <th>Timestamp</th>
                             <th>Actions</th>
                         </tr>
@@ -350,42 +380,44 @@
                         <tr>
                             <td>Warehouse A - Zone 3</td>
                             <td><span class="risk-badge critical">🔴 Critical</span></td>
-                            <td>100</td>
-                            <td>Smoke, Temp, CO, Sound, Camera</td>
-                            <td>2 min ago</td>
-                            <td><button class="btn-small">View</button></td>
+                            <td><strong style="color:var(--critical);font-family:var(--font-mono)">100 / 100</strong></td>
+                            <td>Smoke (65ppm), Temp (78°C), CO, Sound</td>
+                            <td style="font-family:var(--font-mono);font-size:0.8rem;">2 min ago</td>
+                            <td><button class="btn btn-sm btn-secondary">Inspect</button></td>
                         </tr>
                         <tr>
                             <td>Warehouse A - Zone 1</td>
                             <td><span class="risk-badge warning">🟡 Warning</span></td>
-                            <td>75</td>
-                            <td>Temp, Sound</td>
-                            <td>15 min ago</td>
-                            <td><button class="btn-small">View</button></td>
+                            <td><strong style="color:var(--warning);font-family:var(--font-mono)">75 / 100</strong></td>
+                            <td>Thermal Anomaly, High Sound</td>
+                            <td style="font-family:var(--font-mono);font-size:0.8rem;">15 min ago</td>
+                            <td><button class="btn btn-sm btn-secondary">Inspect</button></td>
                         </tr>
                         <tr>
                             <td>Office Block</td>
-                            <td><span class="risk-badge safe">🟢 Safe</span></td>
-                            <td>25</td>
-                            <td>None</td>
-                            <td>1 hour ago</td>
-                            <td><button class="btn-small">View</button></td>
+                            <td><span class="risk-badge safe">🟢 Nominal</span></td>
+                            <td><strong style="color:var(--safe);font-family:var(--font-mono)">25 / 100</strong></td>
+                            <td>All sensors nominal</td>
+                            <td style="font-family:var(--font-mono);font-size:0.8rem;">1 hour ago</td>
+                            <td><button class="btn btn-sm btn-secondary">Inspect</button></td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
+
+        <!-- ═══ SECTION: REPORTS ═══ -->
         <div id="section-reports" class="admin-section">
-            <h2 class="admin-section-title"><i class="fas fa-file-alt"></i> Submitted Reports</h2>
+            <h2 class="admin-section-title"><i class="fas fa-file-invoice"></i> Submitted Field Reports &amp; Near Misses</h2>
 
             <div class="reports-toolbar">
                 <div class="reports-filters">
                     <select id="reportsFilterType" class="reports-filter-select">
-                        <option value="">All Types</option>
+                        <option value="">All Document Types</option>
                         <option value="near-miss">Near Miss</option>
                         <option value="unsafe-condition">Unsafe Condition</option>
-                        <option value="work-permit">Work Permit</option>
-                        <option value="incident-report">Incident Report</option>
+                        <option value="work-permit">Hot Work Permit</option>
+                        <option value="incident-report">Formal Incident Report</option>
                     </select>
                     <select id="reportsFilterSeverity" class="reports-filter-select">
                         <option value="">All Severities</option>
@@ -395,7 +427,7 @@
                         <option value="low">Low</option>
                     </select>
                     <select id="reportsFilterStatus" class="reports-filter-select">
-                        <option value="">All Statuses</option>
+                        <option value="">All Workflow Statuses</option>
                         <option value="open">Open</option>
                         <option value="under-review">Under Review</option>
                         <option value="pending-approval">Pending Approval</option>
@@ -408,20 +440,20 @@
                         <input type="checkbox" id="reportsLiveToggle" checked>
                         <span class="live-switch-slider"></span>
                     </label>
-                    <span id="reportsLiveLabel"><span class="live-dot"></span> Live</span>
+                    <span id="reportsLiveLabel"><span class="live-dot"></span> Live Ingestion</span>
                 </div>
             </div>
 
             <div class="stats-table-card">
-                <div class="reports-meta" id="reportsMeta">Loading…</div>
+                <div class="reports-meta" id="reportsMeta">Synchronizing records…</div>
                 <table class="data-table">
                     <thead>
-                        <tr><th>Type</th><th>Submitted By</th><th>Zone</th><th>Severity</th><th>Date</th><th>Status</th></tr>
+                        <tr><th>Type</th><th>Submitter</th><th>Zone / Sector</th><th>Severity</th><th>Timestamp</th><th>Status</th></tr>
                     </thead>
                     <tbody id="reportsTableBody"></tbody>
                 </table>
                 <div class="reports-pagination">
-                    <button class="reports-page-btn" id="reportsPrevBtn"><i class="fas fa-chevron-left"></i> Prev</button>
+                    <button class="reports-page-btn" id="reportsPrevBtn"><i class="fas fa-chevron-left"></i> Previous</button>
                     <span id="reportsPageIndicator">Page 1</span>
                     <button class="reports-page-btn" id="reportsNextBtn">Next <i class="fas fa-chevron-right"></i></button>
                 </div>
@@ -430,10 +462,16 @@
 
     </main>
 </div>
+
+
+
+
+<!-- ── TOAST NOTIFICATION ── -->
 <div id="toast" class="toast">
     <i class="fas fa-check-circle" id="toastIcon"></i>
     <span id="toastMsg"></span>
 </div>
+
 <script src="api.js"></script>
 <script src="admin.js"></script>
 </body>

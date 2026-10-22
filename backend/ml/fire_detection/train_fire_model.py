@@ -22,10 +22,19 @@ def find_dataset_root(source: Path) -> Path:
         return candidate
     if (source / "0").is_dir() and (source / "1").is_dir():
         return source
-    matches = list(source.rglob("Fire-Detection"))
-    if matches:
-        return matches[0]
-    raise ValueError("Dataset must contain Fire-Detection/0 and Fire-Detection/1 folders.")
+    if (source / "fire_images").is_dir() and (source / "non_fire_images").is_dir():
+        return source
+    for candidate in source.rglob("*"):
+        if not candidate.is_dir():
+            continue
+        if (candidate / "0").is_dir() and (candidate / "1").is_dir():
+            return candidate
+        if (candidate / "fire_images").is_dir() and (candidate / "non_fire_images").is_dir():
+            return candidate
+    raise ValueError(
+        "Dataset must contain Fire-Detection/0 and Fire-Detection/1, "
+        "or fire_images and non_fire_images folders."
+    )
 
 
 def prepare_dataset(source: Path):
@@ -42,8 +51,13 @@ def prepare_dataset(source: Path):
 
 def load_images(dataset_root: Path):
     features, labels = [], []
-    for label in (0, 1):
-        for image_path in (dataset_root / str(label)).iterdir():
+    if (dataset_root / "0").is_dir() and (dataset_root / "1").is_dir():
+        label_directories = ((0, dataset_root / "0"), (1, dataset_root / "1"))
+    else:
+        label_directories = ((0, dataset_root / "non_fire_images"), (1, dataset_root / "fire_images"))
+
+    for label, label_directory in label_directories:
+        for image_path in label_directory.rglob("*"):
             if image_path.suffix.lower() not in {".jpg", ".jpeg", ".png", ".webp"}:
                 continue
             try:

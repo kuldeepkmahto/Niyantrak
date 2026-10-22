@@ -74,6 +74,7 @@ app.use('/api/alerts',    require('./routes/alerts'));
 app.use('/api/users',     require('./routes/users'));
 app.use('/api/ai',        require('./routes/ai'));
 app.use('/api/compliance', require('./routes/compliance'));
+app.use('/api/cctv',       require('./routes/cctv'));
 
 // ── Health check ──────────────────────────────────────────
 app.get('/api/health', (req, res) => res.json({

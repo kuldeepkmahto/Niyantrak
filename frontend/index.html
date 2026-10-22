@@ -3,93 +3,377 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>🔥Niyantrak - Enterprise Fire Safety</title>
+    <title>Niyantrak — Enterprise Fire Safety & AI Vision Intelligence</title>
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet"
-    >
-
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-    >
-
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <link rel="stylesheet" href="style.css">
+    <style>
+        .landing-nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            background: rgba(9, 13, 22, 0.92);
+            -webkit-backdrop-filter: blur(16px);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--line);
+            padding: 0.85rem clamp(1.5rem, 6vw, 6rem);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+        }
+        .landing-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+        }
+        .landing-brand i {
+            color: var(--accent);
+            font-size: 1.6rem;
+            filter: drop-shadow(0 0 10px rgba(255, 87, 34, 0.6));
+        }
+        .landing-brand span {
+            font-family: var(--font-heading);
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 0.06em;
+        }
+        .landing-nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            list-style: none;
+        }
+        .landing-nav-links a {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .landing-nav-links a:hover {
+            color: #fff;
+        }
+        .landing-nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        /* Hero */
+        .landing-hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 8rem clamp(1.5rem, 6vw, 6rem) 5rem;
+            background-color: #090d16;
+            background-image:
+                radial-gradient(circle at 85% 35%, rgba(255, 87, 34, 0.22) 0%, transparent 50%),
+                linear-gradient(90deg, rgba(9, 13, 22, 0.92) 0%, rgba(9, 13, 22, 0.82) 55%, rgba(9, 13, 22, 0.45) 100%),
+                linear-gradient(180deg, rgba(9, 13, 22, 0.85) 0%, rgba(13, 18, 31, 0.65) 50%, #090d16 100%),
+                url('https://wallpaperaccess.com/full/5591435.jpg');
+            background-size: cover;
+            background-position: center right;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-badge-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(16, 22, 38, 0.85);
+            border: 1px solid rgba(255, 87, 34, 0.45);
+            color: #ff8a65;
+            padding: 0.35rem 0.85rem;
+            border-radius: var(--radius-pill);
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+            width: fit-content;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+        }
+        .hero-badge-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: #ff5722;
+            box-shadow: 0 0 8px #ff5722;
+            animation: blink 1.2s infinite;
+        }
+        .landing-hero h1 {
+            font-size: clamp(2.4rem, 5.5vw, 4.4rem);
+            font-weight: 800;
+            line-height: 1.08;
+            letter-spacing: 0.02em;
+            margin-bottom: 1.25rem;
+            max-width: 950px;
+            background: linear-gradient(135deg, #ffffff 40%, #fed7aa 75%, #ff5722 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.65));
+        }
+        .landing-hero p.hero-sub {
+            font-size: clamp(1.05rem, 1.6vw, 1.25rem);
+            color: #d1d5db;
+            max-width: 780px;
+            line-height: 1.65;
+            margin-bottom: 2.5rem;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
+        }
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 3.5rem;
+        }
+
+        /* Metrics Strip */
+        .metrics-strip {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.25rem;
+            max-width: 1000px;
+            background: rgba(16, 22, 38, 0.6);
+            border: 1px solid var(--line);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem 1.75rem;
+            backdrop-filter: blur(8px);
+        }
+        .metric-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+        .metric-cell .num {
+            font-family: var(--font-heading);
+            font-size: 2rem;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1;
+        }
+        .metric-cell .lbl {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Features Section */
+        .features-section {
+            padding: 5rem clamp(1.5rem, 6vw, 6rem);
+            background: #090d16;
+            border-top: 1px solid var(--line);
+        }
+        .section-header-center {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto 3.5rem;
+        }
+        .section-header-center h2 {
+            font-size: 2.2rem;
+            margin-bottom: 0.75rem;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        .feature-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--line);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            transition: all 0.25s;
+            position: relative;
+            overflow: hidden;
+        }
+        .feature-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(255, 87, 34, 0.4);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+        }
+        .feature-icon {
+            width: 52px; height: 52px;
+            border-radius: var(--radius-md);
+            background: rgba(255, 87, 34, 0.12);
+            border: 1px solid rgba(255, 87, 34, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: var(--accent);
+            margin-bottom: 1.25rem;
+        }
+        .feature-card h3 {
+            font-size: 1.35rem;
+            margin-bottom: 0.65rem;
+        }
+        .feature-card p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* Role Quick Launch */
+        .role-launch-section {
+            padding: 4rem clamp(1.5rem, 6vw, 6rem);
+            background: #0c1220;
+            border-top: 1px solid var(--line);
+        }
+        .role-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.25rem;
+            margin-top: 2rem;
+        }
+        .role-card {
+            background: var(--bg-surface-elevated);
+            border: 1px solid var(--line);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .role-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-3px);
+            background: var(--bg-card-hover);
+        }
+        .role-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .role-card-header i {
+            font-size: 1.5rem;
+            color: var(--accent);
+        }
+        .role-card h4 {
+            font-size: 1.2rem;
+            color: #fff;
+            margin: 0;
+        }
+        .role-card p {
+            font-size: 0.84rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        /* Footer */
+        .landing-footer {
+            background: #060910;
+            border-top: 1px solid var(--line);
+            padding: 3rem clamp(1.5rem, 6vw, 6rem);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        @media (max-width: 768px) {
+            .landing-nav-links { display: none; }
+            .landing-footer { flex-direction: column; gap: 1rem; text-align: center; }
+            .landing-hero {
+                background-attachment: scroll;
+                background-position: center center;
+                padding-top: 7rem;
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <div class="news-ticker">
-        <div class="ticker-content">
-            <i class="fas fa-bullhorn"></i>
-            <span>Latest: New Subscription @999</span>
-            <span>Success Rate 91.99%</span>
-            <span>Service available across 50 cities</span>
-            <span>New feature: Mobile checklists live</span>
-            <span>Real-time fire monitoring now smarter than ever</span>
-        </div>
-    </div>
-    <section class="hero">
-        <div class="hero-media" aria-hidden="true">
-            <iframe
-                src="https://www.youtube.com/embed/iUtnZpzkbG8?autoplay=1&mute=1&loop=1&playlist=iUtnZpzkbG8&controls=0&rel=0&modestbranding=1"
-                title="Niyantrak background video"
-                frameborder="0"
-                allow="autoplay; encrypted-media"
-            ></iframe>
-        </div>
-        <div class="niyantrak-logo">
-            <i class="fas fa-fire"></i>
+    <!-- ═══ TOP NAVBAR ═══ -->
+    <nav class="landing-nav">
+        <a href="index.html" class="landing-brand">
+            <i class="fas fa-fire-alt"></i>
             <span>NIYANTRAK</span>
+        </a>
+
+        <ul class="landing-nav-links">
+            <li><a href="#features">Platform Features</a></li>
+            <li><a href="#roles">Command Roles</a></li>
+            <li><a href="cctv.html" style="color:var(--accent);"><i class="fas fa-video"></i> Live CCTV Monitor</a></li>
+            <li><a href="#compliance">NFPA Standards</a></li>
+        </ul>
+
+        <div class="landing-nav-actions">
+            <a href="login.html" class="btn btn-secondary">
+                <i class="fas fa-sign-in-alt"></i> Sign In
+            </a>
+            <a href="signup.html" class="btn btn-primary">
+                <i class="fas fa-user-plus"></i> Get Started
+            </a>
         </div>
-        <div class="hero-content">
-            <div class="trust-metrics">
-                <span>
-                    <i class="fas fa-fire-extinguisher"></i>
-                    10K+ Devices
-                </span>
-
-                <span>
-                    <i class="fas fa-shield-alt"></i>
-                    99.9% Uptime
-                </span>
-
-                <span>
-                    <i class="fas fa-users"></i>
-                    500+ Companies
-                </span>
-            </div>
-            <p>Enterprise Fire Safety &amp; Tracking System</p>
-            <p>Real-time alerts, role-based dashboards,</p>
-            <p>and compliance-ready for organizations.</p>
-            <div class="signup-option">
-
-                <button
-                    type="button"
-                    class="btn-primary"
-                    onclick="window.location.href='login.html'"
-                >
-                    <i class="fas fa-sign-in-alt"></i>
-                    Sign In
-                </button>
-
-                <button
-                    type="button"
-                    class="btn-secondary"
-                    onclick="window.location.href='signup.html'"
-                >
-                    <i class="fas fa-user-plus"></i>
-                    Get Started Free
-                </button>
-
-            </div>
-
+    </nav>
+    <!-- ═══ HERO SECTION ═══ -->
+    <header class="landing-hero">
+        <div class="hero-badge-pill">
+            <span class="hero-badge-dot"></span>
+            <span>Live Industrial Safety Sensing &amp; Vision Intelligence</span>
         </div>
 
-    </section>
+        <h1>AUTONOMOUS FIRE DETECTION, SENSOR FUSION &amp; RESPONSE DISPATCH</h1>
+
+        <p class="hero-sub">
+            Protect high-risk facilities with real-time CCTV flame recognition, multi-sensor hazard fusion, GPS-based emergency dispatch, and digital NFPA compliance auditing.
+        </p>
+
+        <div class="hero-actions">
+            <a href="cctv.html" class="btn btn-primary" style="font-size:0.95rem;padding:0.8rem 1.6rem;">
+                <i class="fas fa-video"></i> Launch Live CCTV Monitor
+            </a>
+            <a href="login.html" class="btn btn-secondary" style="font-size:0.95rem;padding:0.8rem 1.6rem;">
+                <i class="fas fa-shield-alt"></i> Access Command Center
+            </a>
+        </div>
+
+        <!-- Telemetry Strip -->
+        <div class="metrics-strip">
+            <div class="metric-cell">
+                <span class="num">10K+</span>
+                <span class="lbl">Monitored Safety Nodes</span>
+            </div>
+            <div class="metric-cell">
+                <span class="num">&lt; 500ms</span>
+                <span class="lbl">Vision AI Detection Latency</span>
+            </div>
+            <div class="metric-cell">
+                <span class="num">99.98%</span>
+                <span class="lbl">System Uptime</span>
+            </div>
+            <div class="metric-cell">
+                <span class="num">NFPA 72</span>
+                <span class="lbl">Compliance Aligned</span>
+            </div>
+        </div>
+    </header>
     <script src="script.js"></script>
-
+    <script>
+        // Seamless offline fallback to cached local asset if remote wallpaper CDN is unreachable
+        (function() {
+            const img = new Image();
+            img.onerror = function() {
+                const hero = document.querySelector('.landing-hero');
+                if (hero) {
+                    hero.style.backgroundImage = "radial-gradient(circle at 85% 35%, rgba(255, 87, 34, 0.22) 0%, transparent 50%), linear-gradient(90deg, rgba(9, 13, 22, 0.92) 0%, rgba(9, 13, 22, 0.82) 55%, rgba(9, 13, 22, 0.45) 100%), linear-gradient(180deg, rgba(9, 13, 22, 0.85) 0%, rgba(13, 18, 31, 0.65) 50%, #090d16 100%), url('assets/fire-hero.jpg')";
+                }
+            };
+            img.src = "https://wallpaperaccess.com/full/5591435.jpg";
+        })();
+    </script>
 </body>
 </html>

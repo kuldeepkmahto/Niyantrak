@@ -16,12 +16,16 @@ const DEMO_USERS = {
 document.addEventListener('DOMContentLoaded', function() {
     initPage();
     
-    // Auto-hide success messages
+    // Auto-hide success messages safely without deleting the DOM node
     const messages = document.querySelectorAll('#message.success');
     messages.forEach(msg => {
         setTimeout(() => {
             msg.style.opacity = '0';
-            setTimeout(() => msg.remove(), 300);
+            setTimeout(() => {
+                msg.style.display = 'none';
+                msg.textContent = '';
+                msg.className = '';
+            }, 300);
         }, 3000);
     });
 });
@@ -156,29 +160,30 @@ async function submitComplianceDemo() {
 
 // ========================================
 // LOGIN HANDLER (Unified Backend + Demo)
-async function initLogin() {
+function initLogin() {
     const form = document.getElementById('loginForm');
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        handleLogin();
-    });
-    
-    // Enter key login
-    document.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter' && document.activeElement.closest('#loginForm')) {
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
             handleLogin();
-        }
-    });
+        });
+    }
 }
 
 async function handleLogin() {
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-    const message = document.getElementById('message');
+    const email = document.getElementById('email')?.value.trim();
+    const password = document.getElementById('password')?.value;
+    const submitBtn = document.querySelector('#loginForm button[type="submit"]');
     
     if (!email || !password) {
-        showMessage('Please enter email and password', 'error');
+        showMessage('Please enter both email and password.', 'error');
         return;
+    }
+    
+    const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Authenticating...';
     }
     
     // Backend mode first; demo is only fallback when backend is unavailable.
@@ -195,29 +200,35 @@ async function handleLogin() {
             localStorage.setItem('token', data.token);
             sessionStorage.setItem('token', data.token);
             sessionStorage.setItem('user', JSON.stringify(data.user));
-            showMessage(`Welcome ${data.user.role.toUpperCase()}!`, 'success');
+            showMessage(`Welcome back, ${data.user.fullname || data.user.role.toUpperCase()}!`, 'success');
             setTimeout(() => {
                 window.location.href = `${data.user.role}.html`;
-            }, 1200);
+            }, 1000);
             return;
         }
 
         // Only fall back to demo if the real backend rejects the login and the demo match exists.
         if (DEMO_USERS[email] && DEMO_USERS[email].password === password) {
-            showMessage('Backend rejected the login, but demo mode is available.', 'warning');
+            showMessage('Backend rejected credentials → Running in verified Demo Mode.', 'warning');
             handleDemoLogin(email, password);
             return;
         }
 
-        showMessage(data.message || 'Invalid email or password.', 'error');
+        const errorMsg = data.message || (data.errors && data.errors[0]?.msg) || 'Invalid email or password.';
+        showMessage(errorMsg, 'error');
     } catch (error) {
         if (DEMO_USERS[email] && DEMO_USERS[email].password === password) {
-            showMessage('Backend offline → Demo mode active', 'warning');
+            showMessage('Backend offline → Demo mode active.', 'warning');
             handleDemoLogin(email, password);
             return;
         }
 
-        showMessage('Backend unavailable. Please try again later.', 'error');
+        showMessage('Backend server unavailable. Please check server is running.', 'error');
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnHtml;
+        }
     }
 }
 
@@ -251,17 +262,29 @@ async function handleSignup() {
     const email = document.getElementById('email')?.value.trim();
     const phone = document.getElementById('phone')?.value.trim();
     const password = document.getElementById('password')?.value;
+    const confirmpassword = document.getElementById('confirmpassword')?.value;
     const role = document.getElementById('role')?.value;
-    const message = document.getElementById('message');
+    const submitBtn = document.querySelector('#signupForm button[type="submit"]');
     
     if (!fullname || !email || !password || !role) {
-        showMessage('Please fill all required fields', 'error');
+        showMessage('Please fill all required fields.', 'error');
         return;
     }
     
     if (password.length < 8) {
-        showMessage('Password must be 8+ characters', 'error');
+        showMessage('Password must be at least 8 characters.', 'error');
         return;
+    }
+    
+    if (confirmpassword !== undefined && password !== confirmpassword) {
+        showMessage('Passwords do not match. Please re-enter.', 'error');
+        return;
+    }
+    
+    const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
     }
     
     // Backend signup
@@ -274,13 +297,28 @@ async function handleSignup() {
         
         const data = await response.json();
         if (response.ok) {
-            showMessage('Account created! Login now.', 'success');
-            setTimeout(() => window.location.href = 'index.html#login', 2000);
+            if (data.token) {
+                localStorage.setItem('token', data.token);
+                sessionStorage.setItem('token', data.token);
+            }
+            if (data.user) {
+                sessionStorage.setItem('user', JSON.stringify(data.user));
+            }
+            showMessage('Account created successfully! Redirecting...', 'success');
+            setTimeout(() => {
+                window.location.href = data.user?.role ? `${data.user.role}.html` : 'login.html';
+            }, 1200);
         } else {
-            showMessage(data.message || 'Signup failed', 'error');
+            const errorMsg = data.message || (data.errors && data.errors[0]?.msg) || 'Registration failed. Please check your information.';
+            showMessage(errorMsg, 'error');
         }
     } catch (error) {
-        showMessage('Demo: Use test@admin.com/123 for login', 'warning');
+        showMessage('Server offline. Start backend server on port 5000.', 'error');
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnHtml;
+        }
     }
 }
 
@@ -289,7 +327,7 @@ async function handleSignup() {
 function initDashboard() {
     const user = JSON.parse(sessionStorage.getItem('user') || '{}');
     if (!user.role) {
-        window.location.href = 'index.html#login';
+        window.location.href = 'login.html';
         return;
     }
     
@@ -343,22 +381,7 @@ function showMessage(text, type = 'error') {
     if (message) {
         message.textContent = text;
         message.className = type;
+        message.style.display = 'block';
+        message.style.opacity = '1';
     }
 }
-
-// Global Enter key handler
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') {
-        const active = document.activeElement;
-        if (active.closest('form')) {
-            const form = active.closest('form');
-            form.dispatchEvent(new Event('submit', { cancelable: true }));
-        }
-    }
-});
-
-// Mobile optimizations
-document.addEventListener('contextmenu', e => e.preventDefault());
-window.addEventListener('resize', () => {
-    if (window.innerWidth < 768) location.reload();
-});
